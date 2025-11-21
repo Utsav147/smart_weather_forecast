@@ -1,0 +1,11 @@
+Django
+gunicorn
+whitenoise
+python-dotenv
+requests
+pandas
+XGBoost
+joblib
+pandas
+scikit-learn
+google-generativeai

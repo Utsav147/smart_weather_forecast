@@ -1,0 +1,7 @@
+# Django stuff
+*.pyc
+__pycache__/
+/staticfiles/
+
+# Vercel files
+.vercel/

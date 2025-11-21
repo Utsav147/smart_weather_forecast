@@ -1,0 +1,458 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image Caption Generator</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      height: 100vh;
+      overflow: hidden;
+      background: linear-gradient(to bottom, #2193b0, #6dd5ed);
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      height: 8vh;
+      border-radius: 0 0 1rem 1rem;
+      flex-shrink: 0;
+    }
+
+    .navbar {
+      padding: 0.3rem 1rem !important;
+    }
+
+    a.nav-link {
+      color: white;
+      padding: 0.3rem 0.7rem !important;
+      font-size: 0.9rem;
+    }
+
+    a.nav-link:hover {
+      color: rgba(11, 11, 11, 0.5);
+    }
+
+    h1 a {
+      font-size: 1.3rem;
+    }
+
+    #toggleMode {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      border-radius: 50%;
+      padding: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    /* Main Content Area */
+    .main-content {
+      height: 86vh;
+      overflow: hidden;
+      padding: 8px 15px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      max-width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: 1.2rem;
+    }
+
+    .content-wrapper {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 12px;
+      border-radius: 10px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .image-page input[type="file"] {
+      display: none;
+    }
+
+    .image-page .custom-file-upload {
+      border: 2px dashed #1e3a8a;
+      color: #1e3a8a;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-block;
+      font-size: 0.85rem;
+      margin-right: 10px;
+    }
+
+    .image-page .upload-btn {
+      background-color: #1e3a8a;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .image-page .upload-btn:hover {
+      background-color: #334fb0;
+    }
+
+    footer {
+      height: 6vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      background: rgba(0, 0, 0, 0.2);
+      flex-shrink: 0;
+    }
+
+    /* Alert styles */
+    .alert-custom {
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin: 8px 0;
+      font-weight: 500;
+      font-size: 0.8rem;
+    }
+
+    .alert-danger {
+      background: rgba(239, 68, 68, 0.9);
+      color: white;
+      border: 2px solid #dc2626;
+    }
+
+    /* Upload Section */
+    .upload-section {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .file-info {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.85);
+      margin-top: 5px;
+    }
+
+    /* Layout Grid */
+    .results-grid {
+      display: grid;
+      grid-template-columns: 45% 55%;
+      gap: 12px;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Image Section */
+    .image-section {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .image-section h3 {
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+    }
+
+    #fullPreview {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 4px;
+    }
+
+    /* Weather forecast styles */
+    .weather-forecast-box {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .forecast-header {
+      text-align: center;
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .weather-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .weather-item {
+      padding: 5px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      font-size: 0.7rem;
+      border-left: 2px solid #1e3a8a;
+    }
+
+    .weather-label {
+      font-weight: 600;
+      color: #e0f2fe;
+      display: block;
+      font-size: 0.65rem;
+      margin-bottom: 2px;
+    }
+
+    .weather-value {
+      font-weight: 500;
+      font-size: 0.75rem;
+    }
+
+    .forecast-summary {
+      background: rgba(30, 58, 138, 0.3);
+      padding: 6px 8px;
+      border-radius: 5px;
+      margin-top: 6px;
+      font-size: 0.7rem;
+      line-height: 1.3;
+    }
+
+    .forecast-summary strong {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 0.75rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 968px) {
+      .results-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .weather-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body class="image-page">
+  <header>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary"
+      style="border-radius: 0 0 1rem 1rem; background-color: rgba(0, 0, 0, 0.1) !important;">
+      <div class="container-fluid">
+        <h1>
+          <a href="#" style="text-decoration: none; color: white; font-weight: 600;">Ahmedabad Weather</a>
+        </h1>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
+          aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup" style="justify-content: flex-end;">
+          <div class="navbar-nav">
+            <a class="nav-link" href="{% url 'today' %}">Today</a>
+            <a class="nav-link" href="{% url 'hourly' %}">Hourly</a>
+            <a class="nav-link" href="{% url '10day' %}">10 Day</a>
+            <a class="nav-link" href="{% url 'monthly' %}">Monthly</a>
+            <a class="nav-link" href="{% url 'image' %}">From Image</a>
+          </div>
+          <button id="toggleMode">🌙</button>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <div class="main-content">
+    <div class="container">
+      <h2>Weather Prediction from Image</h2>
+
+      <div class="content-wrapper">
+        <!-- Error Message Display -->
+        {% if error_message %}
+          <div class="alert-custom alert-danger">
+            <strong>⚠️</strong> {{ error_message }}
+          </div>
+        {% endif %}
+
+        <!-- Upload Form -->
+        <div class="upload-section">
+          <form method="POST" enctype="multipart/form-data" style="display: inline-block;">
+            {% csrf_token %}
+            <label for="id_image" class="custom-file-upload">📁 Choose Image</label>
+            <input type="file" id="id_image" name="image" accept="image/*" required onchange="handleFileSelect()">
+            <button type="submit" class="upload-btn" id="uploadBtn" style="display: none;">🔍 Analyze</button>
+          </form>
+          <div class="file-info">
+            JPG, PNG, GIF, BMP, WEBP, TIFF | Max: 10 MB
+          </div>
+        </div>
+
+        <!-- Results Grid -->
+        {% if image_base64 or weather_info %}
+        <div class="results-grid">
+          
+          <!-- Image Preview Section -->
+          {% if image_base64 %}
+          <div class="image-section">
+            <h3>📸 Uploaded Image</h3>
+            <img id="fullPreview" src="{{ image_base64 }}" alt="Uploaded Image">
+          </div>
+          {% endif %}
+
+          <!-- Weather Forecast Section -->
+          {% if weather_info and weather_info.is_sky %}
+          <div class="weather-forecast-box">
+            <div class="forecast-header">
+              🌤️ Weather Analysis
+            </div>
+
+            <div class="weather-grid">
+              {% if weather_info.weather_condition %}
+              <div class="weather-item">
+                <span class="weather-label">☁️ Condition</span>
+                <span class="weather-value">{{ weather_info.weather_condition }}</span>
+              </div>
+              {% endif %}
+
+              {% if weather_info.cloud_coverage %}
+              <div class="weather-item">
+                <span class="weather-label">☁️ Coverage</span>
+                <span class="weather-value">{{ weather_info.cloud_coverage }}</span>
+              </div>
+              {% endif %}
+
+              {% if weather_info.cloud_type %}
+              <div class="weather-item">
+                <span class="weather-label">🌥️ Type</span>
+                <span class="weather-value">{{ weather_info.cloud_type }}</span>
+              </div>
+              {% endif %}
+
+              {% if weather_info.cloud_darkness %}
+              <div class="weather-item">
+                <span class="weather-label">🌑 Darkness</span>
+                <span class="weather-value">{{ weather_info.cloud_darkness }}</span>
+              </div>
+              {% endif %}
+
+              {% if weather_info.cloud_intensity %}
+              <div class="weather-item">
+                <span class="weather-label">💨 Intensity</span>
+                <span class="weather-value">{{ weather_info.cloud_intensity }}</span>
+              </div>
+              {% endif %}
+
+              {% if weather_info.rain_probability %}
+              <div class="weather-item">
+                <span class="weather-label">🌧️ Rain</span>
+                <span class="weather-value">{{ weather_info.rain_probability }}</span>
+              </div>
+              {% endif %}
+
+              {% if weather_info.approximate_temp %}
+              <div class="weather-item">
+                <span class="weather-label">🌡️ Temp</span>
+                <span class="weather-value">{{ weather_info.approximate_temp }}</span>
+              </div>
+              {% endif %}
+
+              {% if weather_info.visibility %}
+              <div class="weather-item">
+                <span class="weather-label">👁️ Visibility</span>
+                <span class="weather-value">{{ weather_info.visibility }}</span>
+              </div>
+              {% endif %}
+
+              {% if weather_info.atmospheric_conditions %}
+              <div class="weather-item">
+                <span class="weather-label">🌫️ Atmosphere</span>
+                <span class="weather-value">{{ weather_info.atmospheric_conditions }}</span>
+              </div>
+              {% endif %}
+
+              {% if weather_info.wind_indication %}
+              <div class="weather-item">
+                <span class="weather-label">💨 Wind</span>
+                <span class="weather-value">{{ weather_info.wind_indication }}</span>
+              </div>
+              {% endif %}
+
+              {% if weather_info.time_of_day %}
+              <div class="weather-item">
+                <span class="weather-label">🕐 Time</span>
+                <span class="weather-value">{{ weather_info.time_of_day }}</span>
+              </div>
+              {% endif %}
+            </div>
+
+            {% if weather_info.weather_forecast %}
+            <div class="forecast-summary">
+              <strong>📋 Forecast:</strong>
+              {{ weather_info.weather_forecast }}
+            </div>
+            {% endif %}
+
+            {% if weather_info.details %}
+            <div class="forecast-summary">
+              <strong>🔍 Analysis:</strong>
+              {{ weather_info.details }}
+            </div>
+            {% endif %}
+          </div>
+          {% endif %}
+
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    &copy; 2025 Ahmedabad Weather | Powered by AI
+  </footer>
+
+<script>
+function handleFileSelect() {
+  const fileInput = document.getElementById('id_image');
+  const uploadBtn = document.getElementById('uploadBtn');
+
+  if (fileInput.files.length > 0) {
+    uploadBtn.style.display = 'inline-block';
+  } else {
+    uploadBtn.style.display = 'none';
+  }
+}
+</script>
+
+</body>
+
+</html>

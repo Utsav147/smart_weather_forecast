@@ -1,0 +1,434 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Today Weather - {{ city_key|upper }} </title>
+
+  <!-- Bootstrap CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
+  <style>
+    body {
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(to bottom, #2193b0, #6dd5ed);
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+
+    header {
+      max-height: 10vh;
+      min-height: 10vh;
+      border-radius: 0 0 1rem 1rem;
+      position: relative;
+      z-index: 10;
+    }
+
+    h1 a {
+      font-size: 1.8rem;
+    }
+
+    a.nav-link {
+      color: white;
+    }
+
+    a.nav-link:hover {
+      color: rgba(11, 11, 11, 0.5);
+    }
+
+    #toggleMode {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      border-radius: 50%;
+      padding: 8px;
+      cursor: pointer;
+    }
+
+    .main-container {
+      height: 80vh;
+      display: flex;
+      gap: 15px;
+      padding: 15px;
+      align-items: stretch;
+    }
+
+    .section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .container-box {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 20px;
+      color: white;
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Left Section - Smart Suggestions */
+    .suggestions-header {
+      text-align: center;
+      font-size: 18px;
+      margin-bottom: 8px;
+      font-weight: 600;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .suggestion-card {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 12px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: transform 0.3s ease;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .suggestion-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .suggestion-card h3 {
+      font-size: 18px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 600;
+    }
+
+    .suggestion-card p {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.4;
+      color: #f5f5f5;
+      flex: 1;
+    }
+
+    /* Middle Section - Today Weather */
+    .middle-section {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .main-weather {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .weather-icon img {
+      width: 110px;
+      height: 110px;
+    }
+
+    .city {
+      font-size: 32px;
+      margin: 10px 0;
+      font-weight: 600;
+    }
+
+    .temp {
+      font-size: 48px;
+      margin: 10px 0;
+      font-weight: bold;
+    }
+
+    .condition {
+      font-size: 18px;
+      color: #f0f0f0;
+      margin: 5px 0;
+    }
+
+    .details {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .details .box {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 15px;
+      padding: 20px 10px;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .details .box span {
+      display: block;
+      margin-top: 8px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .forecast {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .forecast .day {
+      flex: 1;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 15px;
+      padding: 20px 10px;
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .forecast .day span {
+      display: block;
+      margin-top: 8px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    /* Right Section - ML Prediction */
+    .right-section {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .prediction-header {
+      text-align: center;
+      font-size: 22px;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .prediction-detail {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 15px;
+      padding: 25px 18px;
+      margin-bottom: 12px;
+      border-left: 4px solid rgba(255, 255, 255, 0.5);
+      text-align: center;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .prediction-detail h4 {
+      font-size: 18px;
+      margin-bottom: 15px;
+      font-weight: 600;
+      color: #f0f0f0;
+    }
+
+    .prediction-detail .value {
+      font-size: 38px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .prediction-detail .label {
+      font-size: 14px;
+      color: #e0e0e0;
+    }
+
+    footer {
+      max-height: 10vh;
+      min-height: 10vh;
+      text-align: center;
+      padding: 15px;
+      font-size: 14px;
+      background: rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    footer p {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    @media (max-width: 992px) {
+      .main-container {
+        flex-direction: column;
+        overflow-y: auto;
+        height: auto;
+        min-height: 80vh;
+      }
+
+      .section {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary"
+      style="border-radius: 0 0 1rem 1rem; background-color: rgba(0, 0, 0, 0.1) !important; flex-wrap: wrap;">
+      <div class="container-fluid">
+        <form method="get" action="{% url 'today' %}" class="d-flex" style="margin-right: 15px;">
+          <select name="city" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="ahmedabad" {% if city_key == "ahmedabad" %}selected{% endif %}>
+              Ahmedabad
+            </option>
+            <option value="surat" {% if city_key == "surat" %}selected{% endif %}>
+              Surat
+            </option>
+            <option value="vadodara" {% if city_key == "vadodara" %}selected{% endif %}>
+              Vadodara
+            </option>
+            <option value="rajkot" {% if city_key == "rajkot" %}selected{% endif %}>
+              Rajkot
+            </option>
+            <option value="gandhinagar" {% if city_key == "gandhinagar" %}selected{% endif %}>
+              Gandhinagar
+            </option>
+          </select>
+        </form>
+
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup" style="justify-content: flex-end;">
+          <div class="navbar-nav">
+            <a class="nav-link" href="{% url 'today' %}">Today</a>
+            <a class="nav-link" href="{% url 'hourly' %}">Hourly</a>
+            <a class="nav-link" href="{% url '10day' %}">10 Day</a>
+            <a class="nav-link" href="{% url 'monthly' %}">Monthly</a>
+            <a class="nav-link" href="{% url 'image' %}">From Image</a>
+          </div>
+          <button id="toggleMode">🌙</button>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <div class="main-container">
+    <!-- Left Section: Smart Suggestions -->
+    {% if suggestions %}
+    <div class="section">
+      <h2 class="suggestions-header">💡 Smart Suggestions</h2>
+      
+      {% if suggestions.clothing %}
+      <div class="suggestion-card">
+        <h3>👕 What to Wear</h3>
+        <p>{{ suggestions.clothing }}</p>
+      </div>
+      {% endif %}
+      
+      {% if suggestions.activities %}
+      <div class="suggestion-card">
+        <h3>🎯 Activities</h3>
+        <p>{{ suggestions.activities }}</p>
+      </div>
+      {% endif %}
+      
+      {% if suggestions.health %}
+      <div class="suggestion-card">
+        <h3>💪 Health Tips</h3>
+        <p>{{ suggestions.health }}</p>
+      </div>
+      {% endif %}
+      
+      {% if suggestions.travel %}
+      <div class="suggestion-card">
+        <h3>🚗 Travel Advice</h3>
+        <p>{{ suggestions.travel }}</p>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Middle Section: Today Weather -->
+    <div class="section middle-section">
+      <div class="container-box" style="flex: 1;">
+        {% if today_data %}
+        <div style="display: flex; flex-direction: column; height: 100%;">
+          <div class="main-weather">
+            <div class="weather-icon">
+              <img src="https://openweathermap.org/img/wn/{{ today_data.icon }}@2x.png" alt="Weather Icon">
+            </div>
+            <h1 class="city">{{ today_data.city }}</h1>
+            <h2 class="temp">{{ today_data.temp }}°C</h2>
+            <p class="condition">{{ today_data.description }}</p>
+            <p class="condition" style="font-size: 15px; margin-top: 5px;">Feels Like: {{ today_data.feels_like }}°C</p>
+          </div>
+
+          <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-around;">
+            <div class="details">
+              <div class="box">💨 Wind<br><span>{{ today_data.wind_kmh }}</span></div>
+              <div class="box">💧 Humidity<br><span>{{ today_data.humidity }}</span></div>
+              <div class="box">🌅 Sunrise<br><span>{{ today_data.sunrise }}</span></div>
+            </div>
+
+            <div class="forecast">
+              <div class="day">❄️ Min<br><span>{{ today_data.min_temp }}°C</span></div>
+              <div class="day">🔥 Max<br><span>{{ today_data.max_temp }}°C</span></div>
+              <div class="day">🌄 Sunset<br><span>{{ today_data.sunset }}</span></div>
+            </div>
+          </div>
+        </div>
+
+        {% else %}
+        <p class="text-center">Weather data not available.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right Section: ML Prediction -->
+    <div class="section right-section">
+      <h2 class="prediction-header">🤖 ML Prediction</h2>
+      
+      <div class="prediction-detail">
+        <h4>🌡️ Predicted Temperature</h4>
+        <div class="value">{{ pred_temp }}°C</div>
+      </div>
+
+      <div class="prediction-detail">
+        <h4>🌤️ Predicted Weather</h4>
+        <div class="value" style="font-size: 28px;">{{ pred_weather_type }}</div>
+      </div>
+
+      <div class="prediction-detail">
+        <h4>🍂 Current Season</h4>
+        <div class="value" style="font-size: 28px;">{{ season|title }}</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 Ahmedabad Weather</p>
+  </footer>
+
+  <script>
+    const toggleBtn = document.getElementById("toggleMode");
+    const body = document.body;
+    let darkMode = false;
+
+    toggleBtn.addEventListener("click", () => {
+      darkMode = !darkMode;
+      if (darkMode) {
+        body.style.background = "linear-gradient(to bottom, #232526, #414345)";
+        toggleBtn.textContent = "☀️";
+      } else {
+        body.style.background = "linear-gradient(to bottom, #2193b0, #6dd5ed)";
+        toggleBtn.textContent = "🌙";
+      }
+    });
+  </script>
+</body>
+
+</html>
