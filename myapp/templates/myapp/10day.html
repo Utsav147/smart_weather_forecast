@@ -1,141 +1,400 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>10 Day Weather - {{ city_key|upper }} </title>
 
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+  // Apply saved theme immediately on load
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme) {
+      document.documentElement.setAttribute("data-theme", savedTheme);
+  }
+</script>
 
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10 Day Weather - {{ city_key|upper }}</title>
   <style>
-    body {
-      min-height: 100vh;
-      background: linear-gradient(to bottom, #2193b0, #6dd5ed);
-      color: white;
-      font-family: 'Segoe UI', sans-serif;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    header {
-      max-height: 10vh;
-      min-height: 10vh;
-      border-radius: 0 0 1rem 1rem;
-      position: relative;
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #c8d6e5 0%, #8395a7 100%);
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background: #f5f6fa;
+      padding: clamp(12px, 2vh, 20px) clamp(16px, 4vw, 40px);
+      box-shadow: 0 2px 12px rgba(99, 110, 114, 0.15);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: clamp(12px, 2vw, 24px);
+      flex-wrap: wrap;
+    }
+
+    .city-selector {
+      padding: clamp(8px, 1vh, 12px) clamp(12px, 2vw, 20px);
+      border: 2px solid #dfe4ea;
+      border-radius: 12px;
+      font-size: clamp(13px, 1.8vh, 15px);
+      color: #2f3542;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .city-selector:hover {
+      border-color: #57606f;
+      box-shadow: 0 2px 8px rgba(87, 96, 111, 0.2);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: clamp(8px, 1.5vw, 16px);
+      flex-wrap: wrap;
+    }
+
+    .nav-links a {
+      padding: clamp(8px, 1vh, 12px) clamp(12px, 2vw, 18px);
+      color: #2f3542;
+      text-decoration: none;
+      border-radius: 10px;
+      font-size: clamp(13px, 1.6vh, 14px);
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .nav-links a:hover {
+      background: #dfe4ea;
+      transform: translateY(-1px);
+    }
+
+    .toggle-btn {
+      background: #dfe4ea;
+      border: none;
+      border-radius: 50%;
+      padding: clamp(8px, 1.2vh, 12px);
+      cursor: pointer;
+      font-size: clamp(16px, 2.2vh, 20px);
+      transition: all 0.3s ease;
+      min-width: clamp(36px, 5vh, 44px);
+      min-height: clamp(36px, 5vh, 44px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .toggle-btn:hover {
+      background: #a4b0be;
+      transform: rotate(20deg) scale(1.1);
+    }
+
+    .colorblind-btn {
+      background: #dfe4ea;
+      border: none;
+      border-radius: 50%;
+      padding: clamp(8px, 1.2vh, 12px);
+      cursor: pointer;
+      font-size: clamp(16px, 2.2vh, 20px);
+      transition: all 0.3s ease;
+      min-width: clamp(36px, 5vh, 44px);
+      min-height: clamp(36px, 5vh, 44px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .colorblind-btn:hover {
+      background: #a4b0be;
+      transform: scale(1.1);
+    }
+
+    /* Colorblind Mode */
+    body.colorblind-mode {
+      background: #1a1a1a !important;
+    }
+
+    body.colorblind-mode .header {
+      background: #000000 !important;
+    }
+
+    body.colorblind-mode .forecast-container {
+      background: #0a0a0f !important;
+      color: #ffffff !important;
+    }
+
+    body.colorblind-mode .day-row:not(.header) {
+      background: #1a1a1a !important;
+      color: #ffffff !important;
+    }
+
+    body.colorblind-mode .day-row:not(.header) span {
+      color: #ffffff !important;
+    }
+
+    body.colorblind-mode .day-row.header {
+      background: linear-gradient(135deg, #00ff00 0%, #00cc00 100%) !important;
+      color: #000000 !important;
+    }
+
+    body.colorblind-mode .day-row.header span {
+      color: #000000 !important;
+      font-weight: 700 !important;
+    }
+
+    body.colorblind-mode .page-title {
+      color: #ffffff !important;
+    }
+
+    body.colorblind-mode .date-col {
+      color: #ffff00 !important;
+      font-weight: 700 !important;
+    }
+
+    body.colorblind-mode .temp-col {
+      color: #ff0000 !important;
+      font-weight: 700 !important;
+    }
+
+    body.colorblind-mode .condition-col {
+      color: #ffffff !important;
+    }
+
+    body.colorblind-mode .precip-col {
+      color: #00ffff !important;
+      font-weight: 600 !important;
+    }
+
+    body.colorblind-mode .wind-col {
+      color: #cccccc !important;
+    }
+
+    body.colorblind-mode .nav-links a,
+    body.colorblind-mode .city-selector {
+      color: #ffffff !important;
+      background: #2a2a2a !important;
+      border-color: #444444 !important;
+    }
+
+    body.colorblind-mode .footer {
+      background: rgba(0, 0, 0, 0.8) !important;
+      color: #ffffff !important;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: clamp(16px, 3vh, 32px) clamp(16px, 4vw, 40px);
+    }
+
+    .page-title {
+      font-size: clamp(24px, 4vw, 36px);
+      font-weight: 600;
+      color: #2f3542;
+      text-align: center;
+      margin-bottom: clamp(24px, 4vh, 40px);
+    }
+
+    .forecast-container {
+      background: #f5f6fa;
+      border-radius: clamp(20px, 3vh, 28px);
+      padding: clamp(24px, 4vh, 40px) clamp(20px, 4vw, 36px);
+      box-shadow: 0 8px 32px rgba(99, 110, 114, 0.15);
+    }
+
+    .day-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: clamp(8px, 2vw, 16px);
+      padding: clamp(12px, 2vh, 16px);
+      background: rgba(223, 228, 234, 0.5);
+      border-radius: 12px;
+      margin-bottom: clamp(8px, 1.5vh, 12px);
+      transition: all 0.3s ease;
+    }
+
+    .day-row:hover:not(.header) {
+      background: rgba(223, 228, 234, 0.8);
+      transform: translateX(4px);
+      box-shadow: 0 2px 8px rgba(87, 96, 111, 0.15);
+    }
+
+    .day-row.header {
+      background: linear-gradient(135deg, #3c6382 0%, #0c2461 100%);
+      color: white;
+      font-weight: 600;
+      font-size: clamp(13px, 1.8vw, 15px);
+      margin-bottom: clamp(16px, 2.5vh, 20px);
+      position: sticky;
+      top: clamp(60px, 10vh, 80px);
       z-index: 10;
     }
 
-    a.nav-link {
+    .day-row span {
+      text-align: center;
+      font-size: clamp(12px, 1.6vw, 14px);
+      color: #2f3542;
+      padding: clamp(4px, 0.8vh, 8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .day-row.header span {
       color: white;
     }
 
-    a.nav-link:hover {
-      color: rgba(11, 11, 11, 0.5);
-    }
-
-    h1 a {
-      font-size: 1.8rem;
-    }
-
-    #toggleMode {
-      background: rgba(255, 255, 255, 0.2);
-      border: none;
-      border-radius: 50%;
-      padding: 8px;
-      cursor: pointer;
-    }
-
-    .container-box {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 20px;
-      padding: 20px;
-      backdrop-filter: blur(10px);
-      margin-top: 30px;
-    }
-
-    .hour-row {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      padding: 12px 16px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      margin-bottom: 10px;
-      font-size: 14px;
-      color: white;
-    }
-
-    .hour-row.header {
-      font-weight: bold;
-      background: rgba(255, 255, 255, 0.3);
-      color: #222;
-    }
-
-    .hour-row span {
-      text-align: center;
-    }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 30px;
+    .date-col {
       font-weight: 600;
+      color: #3c6382;
     }
 
+    .temp-col {
+      font-weight: 600;
+      color: #ee5a6f;
+    }
 
-    footer {
+    .condition-col {
+      color: #57606f;
+    }
+
+    .precip-col {
+      color: #0fb9b1;
+    }
+
+    .wind-col {
+      color: #747d8c;
+    }
+
+    /* Footer */
+    .footer {
       text-align: center;
-      padding: 15px;
-      font-size: 14px;
-      margin-top: 40px;
-      background: rgba(0, 0, 0, 0.2);
+      padding: clamp(20px, 3vh, 32px);
+      color: #2f3542;
+      font-size: clamp(13px, 1.8vw, 14px);
+      background: rgba(223, 228, 234, 0.5);
+      margin-top: clamp(24px, 4vh, 40px);
     }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .day-row {
+        grid-template-columns: 1fr;
+        gap: clamp(6px, 1vh, 8px);
+      }
+
+      .day-row span {
+        text-align: left;
+        justify-content: flex-start;
+        padding-left: clamp(8px, 2vw, 12px);
+      }
+
+      .day-row span::before {
+        content: attr(data-label);
+        font-weight: 600;
+        margin-right: 8px;
+        min-width: 120px;
+        color: #747d8c;
+      }
+
+      .day-row.header {
+        display: none;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .header-content {
+        justify-content: center;
+      }
+
+      .nav-links {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    /* Animation */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .forecast-container {
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .day-row {
+      animation: fadeInUp 0.4s ease-out forwards;
+    }
+
+    .day-row:nth-child(2) { animation-delay: 0.05s; }
+    .day-row:nth-child(3) { animation-delay: 0.1s; }
+    .day-row:nth-child(4) { animation-delay: 0.15s; }
+    .day-row:nth-child(5) { animation-delay: 0.2s; }
+    .day-row:nth-child(6) { animation-delay: 0.25s; }
+    .day-row:nth-child(7) { animation-delay: 0.3s; }
+    .day-row:nth-child(8) { animation-delay: 0.35s; }
+    .day-row:nth-child(9) { animation-delay: 0.4s; }
+    .day-row:nth-child(10) { animation-delay: 0.45s; }
+    .day-row:nth-child(11) { animation-delay: 0.5s; }
   </style>
 </head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <form method="get" action="{% url '10day' %}">
+        <select name="city" class="city-selector" onchange="this.form.submit()">
+          <option value="ahmedabad" {% if city_key == "ahmedabad" %}selected{% endif %}>Ahmedabad</option>
+          <option value="surat" {% if city_key == "surat" %}selected{% endif %}>Surat</option>
+          <option value="vadodara" {% if city_key == "vadodara" %}selected{% endif %}>Vadodara</option>
+          <option value="rajkot" {% if city_key == "rajkot" %}selected{% endif %}>Rajkot</option>
+          <option value="gandhinagar" {% if city_key == "gandhinagar" %}selected{% endif %}>Gandhinagar</option>
+        </select>
+      </form>
 
-<body class="tenday-page">
-  <header>
-    <nav class="navbar navbar-expand-lg bg-body-tertiary"
-      style="border-radius: 0 0 1rem 1rem; background-color: rgba(0, 0, 0, 0.1) !important; flex-wrap: wrap;">
-      <div class="container-fluid">
-        <form method="get" action="{% url '10day' %}" class="d-flex" style="margin-right: 15px;">
-          <select name="city" class="form-select form-select-sm" onchange="this.form.submit()">
-            <option value="ahmedabad" {% if city_key == "ahmedabad" %}selected{% endif %}>
-              Ahmedabad
-            </option>
-            <option value="surat" {% if city_key == "surat" %}selected{% endif %}>
-              Surat
-            </option>
-            <option value="vadodara" {% if city_key == "vadodara" %}selected{% endif %}>
-              Vadodara
-            </option>
-            <option value="rajkot" {% if city_key == "rajkot" %}selected{% endif %}>
-              Rajkot
-            </option>
-            <option value="gandhinagar" {% if city_key == "gandhinagar" %}selected{% endif %}>
-              Gandhinagar
-            </option>
-          </select>
-        </form>
-        <div class="collapse navbar-collapse" id="navbarNavAltMarkup" style="justify-content: flex-end;">
-          <div class="navbar-nav">
-            <a class="nav-link" href="{% url 'today' %}">Today</a>
-            <a class="nav-link" href="{% url 'hourly' %}">Hourly</a>
-            <a class="nav-link" href="{% url '10day' %}">10 Day</a>
-            <a class="nav-link" href="{% url 'monthly' %}">Monthly</a>
-            <a class="nav-link" href="{% url 'image' %}">From Image</a>
-          </div>
-          <button id="toggleMode">🌙</button>
-        </div>
+      <div class="nav-links">
+        <a href="{% url 'today' %}">Today</a>
+        <a href="{% url 'hourly' %}">Hourly</a>
+        <a href="{% url '10day' %}">10 Day</a>
+        <a href="{% url 'monthly' %}">Monthly</a>
+        <a href="{% url 'image' %}">Image</a>
       </div>
-    </nav>
-  </header>
 
+      <button id="colorblindMode" class="colorblind-btn" title="Toggle Colorblind Mode">👁️</button>
+      <button id="toggleMode" class="toggle-btn" onclick="toggleTheme()">🌙</button>
+    </div>
+  </div>
+
+  <!-- Main Container -->
   <div class="container">
-    <div class="container-box">
-      <h2>10 Day Weather Forecast - {{ city_key|upper }} </h2>
+    <h1 class="page-title">📅 10 Day Weather Forecast - {{ city_key|upper }}</h1>
 
-      <div class="hour-row header">
+    <div class="forecast-container">
+      <div class="day-row header">
         <span>Day</span>
         <span>High / Low</span>
         <span>Condition</span>
@@ -144,41 +403,151 @@
       </div>
 
       {% for day in forecast_data %}
-      <div class="hour-row">
-        <span>{{ day.date }}</span>
-        <span>{{ day.high_low }}</span>
-        <span>{{ day.condition }}</span>
-        <span>{{ day.precip }}</span>
-        <span>{{ day.wind }}</span>
+      <div class="day-row">
+        <span class="date-col" data-label="Day:">{{ day.date }}</span>
+        <span class="temp-col" data-label="High / Low:">{{ day.high_low }}</span>
+        <span class="condition-col" data-label="Condition:">{{ day.condition }}</span>
+        <span class="precip-col" data-label="Precipitation:">{{ day.precip }}</span>
+        <span class="wind-col" data-label="Wind:">{{ day.wind }}</span>
       </div>
       {% empty %}
-      <div class="hour-row">
-        <span colspan="5">No forecast data available</span>
+      <div class="day-row">
+        <span style="grid-column: 1 / -1; text-align: center;">No forecast data available</span>
       </div>
       {% endfor %}
     </div>
   </div>
 
-  <footer>
-    &copy; 2025 Ahmedabad Weather
-  </footer>
+  <!-- Footer -->
+  <div class="footer">
+    <p>&copy; 2025 Weather Dashboard | Made with 💙</p>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+      // -----------------------------
+      // 1) RESTORE DARK MODE
+      // -----------------------------
+      let savedDark = localStorage.getItem("darkMode");
+
+      if (savedDark === "true") {
+        // Simulate the button click so that ALL your styles apply
+        document.getElementById("toggleMode").click();
+      }
+
+      // -----------------------------
+      // 2) RESTORE COLORBLIND MODE
+      // -----------------------------
+      let savedCB = localStorage.getItem("colorblindMode");
+
+      if (savedCB === "true") {
+        document.getElementById("colorblindMode").click();
+      }
+    });
+  </script>
 
   <script>
     const toggleBtn = document.getElementById("toggleMode");
+    const colorblindBtn = document.getElementById("colorblindMode");
     const body = document.body;
     let darkMode = false;
+    let colorblindMode = false;
 
-    toggleBtn.addEventListener("click", () => {
-      darkMode = !darkMode;
-      if (darkMode) {
-        body.style.background = "linear-gradient(to bottom, #232526, #414345)";
-        toggleBtn.textContent = "☀️";
+    // Colorblind mode toggle
+    colorblindBtn.addEventListener("click", function() {
+      colorblindMode = !colorblindMode;
+      localStorage.setItem("colorblindMode", colorblindMode);
+
+      console.log("Colorblind mode toggled:", colorblindMode);
+      
+      if (colorblindMode) {
+        body.classList.add('colorblind-mode');
+        colorblindBtn.style.background = '#ff6b6b';
+        colorblindBtn.textContent = "👁️‍🗨️";
       } else {
-        body.style.background = "linear-gradient(to bottom, #2193b0, #6dd5ed)";
+        body.classList.remove('colorblind-mode');
+        colorblindBtn.style.background = '#dfe4ea';
+        colorblindBtn.textContent = "👁️";
+      }
+    });
+
+    // Dark/Light mode toggle
+    toggleBtn.addEventListener("click", function() {
+      darkMode = !darkMode;
+      localStorage.setItem("darkMode", darkMode);
+
+      if (darkMode) {
+        // Dark Mode
+        body.style.background = "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)";
+        toggleBtn.textContent = "☀️";
+        toggleBtn.style.background = "#ffd700";
+        
+        // Header
+        document.querySelector('.header').style.background = '#1f2937';
+        document.querySelectorAll('.nav-links a').forEach(el => {
+          el.style.color = '#e2e8f0';
+        });
+        document.querySelector('.city-selector').style.background = '#374151';
+        document.querySelector('.city-selector').style.color = '#e2e8f0';
+        document.querySelector('.city-selector').style.borderColor = '#4b5563';
+        
+        // Page title
+        document.querySelector('.page-title').style.color = '#f3f4f6';
+        
+        // Container
+        document.querySelector('.forecast-container').style.background = '#1f2937';
+        
+        // Day rows
+        document.querySelectorAll('.day-row:not(.header)').forEach(el => {
+          el.style.background = 'rgba(55, 65, 81, 0.5)';
+          el.style.color = '#e2e8f0';
+        });
+        
+        document.querySelectorAll('.day-row:not(.header) span').forEach(el => {
+          el.style.color = '#e2e8f0';
+        });
+        
+        // Footer
+        document.querySelector('.footer').style.background = 'rgba(31, 41, 55, 0.5)';
+        document.querySelector('.footer').style.color = '#e2e8f0';
+        
+      } else {
+        // Light Mode
+        body.style.background = "linear-gradient(135deg, #c8d6e5 0%, #8395a7 100%)";
         toggleBtn.textContent = "🌙";
+        toggleBtn.style.background = "#dfe4ea";
+        
+        // Header
+        document.querySelector('.header').style.background = '#f5f6fa';
+        document.querySelectorAll('.nav-links a').forEach(el => {
+          el.style.color = '#2f3542';
+        });
+        document.querySelector('.city-selector').style.background = 'white';
+        document.querySelector('.city-selector').style.color = '#2f3542';
+        document.querySelector('.city-selector').style.borderColor = '#dfe4ea';
+        
+        // Page title
+        document.querySelector('.page-title').style.color = '#2f3542';
+        
+        // Container
+        document.querySelector('.forecast-container').style.background = '#f5f6fa';
+        
+        // Day rows
+        document.querySelectorAll('.day-row:not(.header)').forEach(el => {
+          el.style.background = 'rgba(223, 228, 234, 0.5)';
+          el.style.color = '#2f3542';
+        });
+        
+        document.querySelectorAll('.day-row:not(.header) span').forEach(el => {
+          el.style.color = '';
+        });
+        
+        // Footer
+        document.querySelector('.footer').style.background = 'rgba(223, 228, 234, 0.5)';
+        document.querySelector('.footer').style.color = '#2f3542';
       }
     });
   </script>
 </body>
-
 </html>

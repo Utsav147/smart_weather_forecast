@@ -1,3 +1,5 @@
+# 
+.env
 # Django stuff
 *.pyc
 __pycache__/

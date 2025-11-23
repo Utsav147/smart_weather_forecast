@@ -1,434 +1,847 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Today Weather - {{ city_key|upper }} </title>
-
-  <!-- Bootstrap CDN -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Dashboard - {{ city_key|upper }}</title>
   <style>
-    body {
-      min-height: 100vh;
+    * {
       margin: 0;
-      background: linear-gradient(to bottom, #2193b0, #6dd5ed);
-      color: white;
-      font-family: 'Segoe UI', sans-serif;
-      overflow: hidden;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    header {
-      max-height: 10vh;
-      min-height: 10vh;
-      border-radius: 0 0 1rem 1rem;
-      position: relative;
-      z-index: 10;
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #c8d6e5 0%, #8395a7 100%);
+      min-height: 100vh;
     }
 
-    h1 a {
-      font-size: 1.8rem;
+    /* Header */
+    .header {
+      background: #f5f6fa;
+      padding: clamp(12px, 2vh, 20px) clamp(16px, 4vw, 40px);
+      box-shadow: 0 2px 12px rgba(99, 110, 114, 0.15);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
-    a.nav-link {
-      color: white;
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: clamp(12px, 2vw, 24px);
+      flex-wrap: wrap;
     }
 
-    a.nav-link:hover {
-      color: rgba(11, 11, 11, 0.5);
+    .city-selector {
+      padding: clamp(8px, 1vh, 12px) clamp(12px, 2vw, 20px);
+      border: 2px solid #dfe4ea;
+      border-radius: 12px;
+      font-size: clamp(13px, 1.8vh, 15px);
+      color: #2f3542;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
     }
 
-    #toggleMode {
-      background: rgba(255, 255, 255, 0.2);
+    .city-selector:hover {
+      border-color: #57606f;
+      box-shadow: 0 2px 8px rgba(87, 96, 111, 0.2);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: clamp(8px, 1.5vw, 16px);
+      flex-wrap: wrap;
+    }
+
+    .nav-links a {
+      padding: clamp(8px, 1vh, 12px) clamp(12px, 2vw, 18px);
+      color: #2f3542;
+      text-decoration: none;
+      border-radius: 10px;
+      font-size: clamp(13px, 1.6vh, 14px);
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .nav-links a:hover {
+      background: #dfe4ea;
+      transform: translateY(-1px);
+    }
+
+    .toggle-btn {
+      background: #dfe4ea;
       border: none;
       border-radius: 50%;
-      padding: 8px;
+      padding: clamp(8px, 1.2vh, 12px);
       cursor: pointer;
-    }
-
-    .main-container {
-      height: 80vh;
-      display: flex;
-      gap: 15px;
-      padding: 15px;
-      align-items: stretch;
-    }
-
-    .section {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .container-box {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 20px;
-      padding: 20px;
-      color: white;
-      backdrop-filter: blur(10px);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    /* Left Section - Smart Suggestions */
-    .suggestions-header {
-      text-align: center;
-      font-size: 18px;
-      margin-bottom: 8px;
-      font-weight: 600;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-    }
-
-    .suggestion-card {
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 12px;
-      padding: 12px;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      transition: transform 0.3s ease;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .suggestion-card:hover {
-      transform: translateY(-2px);
-    }
-
-    .suggestion-card h3 {
-      font-size: 18px;
-      margin-bottom: 6px;
+      font-size: clamp(16px, 2.2vh, 20px);
+      transition: all 0.3s ease;
+      min-width: clamp(36px, 5vh, 44px);
+      min-height: clamp(36px, 5vh, 44px);
       display: flex;
       align-items: center;
-      gap: 5px;
-      font-weight: 600;
+      justify-content: center;
     }
 
-    .suggestion-card p {
-      margin: 0;
-      font-size: 15px;
-      line-height: 1.4;
-      color: #f5f5f5;
-      flex: 1;
+    .toggle-btn:hover {
+      background: #a4b0be;
+      transform: rotate(20deg) scale(1.1);
     }
 
-    /* Middle Section - Today Weather */
-    .middle-section {
+    .colorblind-btn {
+      background: #dfe4ea;
+      border: none;
+      border-radius: 50%;
+      padding: clamp(8px, 1.2vh, 12px);
+      cursor: pointer;
+      font-size: clamp(16px, 2.2vh, 20px);
+      transition: all 0.3s ease;
+      min-width: clamp(36px, 5vh, 44px);
+      min-height: clamp(36px, 5vh, 44px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .colorblind-btn:hover {
+      background: #a4b0be;
+      transform: scale(1.1);
+    }
+
+    /* Colorblind Mode - High Contrast Inverted Colors */
+    body.colorblind-mode {
+      background: #1a1a1a !important;
+    }
+
+    body.colorblind-mode .header {
+      background: #000000 !important;
+    }
+
+    body.colorblind-mode .weather-hero,
+    body.colorblind-mode .suggestion-card,
+    body.colorblind-mode .predictions-panel {
+      background: #0a0a0f !important;
+      color: #ffffff !important;
+    }
+
+    body.colorblind-mode .city-name,
+    body.colorblind-mode .panel-header,
+    body.colorblind-mode .suggestion-title,
+    body.colorblind-mode .stat-value,
+    body.colorblind-mode .metric-value {
+      color: #ffffff !important;
+    }
+
+    body.colorblind-mode .temperature,
+    body.colorblind-mode .prediction-value {
+      color: #00ff00 !important;
+    }
+
+    body.colorblind-mode .condition,
+    body.colorblind-mode .feels-like,
+    body.colorblind-mode .suggestion-text {
+      color: #cccccc !important;
+    }
+
+    body.colorblind-mode .stat-label,
+    body.colorblind-mode .prediction-label {
+      color: #999999 !important;
+    }
+
+    body.colorblind-mode .stat-item,
+    body.colorblind-mode .prediction-item {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%) !important;
+    }
+
+    body.colorblind-mode .nav-links a,
+    body.colorblind-mode .city-selector {
+      color: #ffffff !important;
+      background: #2a2a2a !important;
+      border-color: #444444 !important;
+    }
+
+    body.colorblind-mode .footer {
+      background: rgba(0, 0, 0, 0.8) !important;
+      color: #ffffff !important;
+    }
+
+    body.colorblind-mode .season-badge {
+      background: linear-gradient(135deg, #00ff00 0%, #00cc00 100%) !important;
+      color: #000000 !important;
+    }
+
+    body.colorblind-mode .suggestion-card:nth-child(1) { border-left-color: #ff0000 !important; }
+    body.colorblind-mode .suggestion-card:nth-child(2) { border-left-color: #00ff00 !important; }
+    body.colorblind-mode .suggestion-card:nth-child(3) { border-left-color: #0000ff !important; }
+    body.colorblind-mode .suggestion-card:nth-child(4) { border-left-color: #ffff00 !important; }
+
+    /* Main Container */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: clamp(16px, 3vh, 32px) clamp(16px, 4vw, 40px);
+    }
+
+    /* Desktop Layout: Grid */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: clamp(16px, 2.5vh, 24px);
+    }
+
+    /* Weather Hero - Spans full width on mobile, 8 cols on desktop */
+    .weather-hero {
+      grid-column: 1 / -1;
+      background: #f5f6fa;
+      border-radius: clamp(20px, 3vh, 28px);
+      padding: clamp(24px, 4vh, 40px) clamp(20px, 4vw, 36px);
+      box-shadow: 0 8px 32px rgba(99, 110, 114, 0.15);
       display: flex;
       flex-direction: column;
-      height: 100%;
-    }
-
-    .main-weather {
+      align-items: center;
       text-align: center;
-      margin-bottom: 20px;
     }
 
-    .weather-icon img {
-      width: 110px;
-      height: 110px;
+    .weather-icon-wrapper {
+      margin-bottom: clamp(16px, 2.5vh, 24px);
     }
 
-    .city {
-      font-size: 32px;
-      margin: 10px 0;
-      font-weight: 600;
+    .weather-icon-wrapper img {
+      width: clamp(80px, 15vw, 120px);
+      height: clamp(80px, 15vw, 120px);
+      filter: drop-shadow(0 4px 12px rgba(87, 96, 111, 0.3));
     }
 
-    .temp {
-      font-size: 48px;
-      margin: 10px 0;
-      font-weight: bold;
+    .city-name {
+      font-size: clamp(24px, 4vw, 36px);
+      font-weight: 300;
+      color: #2f3542;
+      margin-bottom: clamp(8px, 1.5vh, 12px);
+    }
+
+    .temperature {
+      font-size: clamp(56px, 10vw, 88px);
+      font-weight: 200;
+      color: #3c6382;
+      margin-bottom: clamp(8px, 1.5vh, 12px);
+      line-height: 1;
     }
 
     .condition {
-      font-size: 18px;
-      color: #f0f0f0;
-      margin: 5px 0;
+      font-size: clamp(16px, 2.5vw, 20px);
+      color: #57606f;
+      margin-bottom: clamp(6px, 1vh, 10px);
     }
 
-    .details {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      margin: 20px 0;
+    .feels-like {
+      font-size: clamp(13px, 2vw, 15px);
+      color: #747d8c;
+      margin-bottom: clamp(20px, 3vh, 32px);
     }
 
-    .details .box {
-      flex: 1;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 15px;
-      padding: 20px 10px;
-      text-align: center;
-      font-size: 15px;
-      font-weight: 500;
+    /* Weather Stats Grid */
+    .weather-stats {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(clamp(90px, 25vw, 140px), 1fr));
+      gap: clamp(12px, 2vh, 20px);
+      padding-top: clamp(20px, 3vh, 28px);
+      border-top: 1px solid #e0e0e0;
     }
 
-    .details .box span {
-      display: block;
-      margin-top: 8px;
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-    .forecast {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      margin-top: 20px;
-    }
-
-    .forecast .day {
-      flex: 1;
-      text-align: center;
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 15px;
-      padding: 20px 10px;
-      font-size: 15px;
-      font-weight: 500;
-    }
-
-    .forecast .day span {
-      display: block;
-      margin-top: 8px;
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-    /* Right Section - ML Prediction */
-    .right-section {
+    .stat-item {
       display: flex;
       flex-direction: column;
-      height: 100%;
+      align-items: center;
+      padding: clamp(12px, 2vh, 18px);
+      background: linear-gradient(135deg, #dfe4ea 0%, #ced6e0 100%);
+      border-radius: clamp(12px, 2vh, 16px);
+      transition: all 0.3s ease;
     }
 
-    .prediction-header {
-      text-align: center;
-      font-size: 22px;
-      margin-bottom: 12px;
+    .stat-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(87, 96, 111, 0.2);
+    }
+
+    .stat-label {
+      font-size: clamp(11px, 1.6vw, 13px);
+      color: #747d8c;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: clamp(6px, 1vh, 8px);
+    }
+
+    .stat-value {
+      font-size: clamp(16px, 2.5vw, 20px);
       font-weight: 600;
+      color: #2f3542;
     }
 
-    .prediction-detail {
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 15px;
-      padding: 25px 18px;
-      margin-bottom: 12px;
-      border-left: 4px solid rgba(255, 255, 255, 0.5);
-      text-align: center;
-      flex: 1;
+    /* Suggestions Section - 2x2 grid on desktop, stack on mobile */
+    .suggestions-container {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap: clamp(14px, 2vh, 20px);
+    }
+
+    .suggestion-card {
+      background: #f5f6fa;
+      border-radius: clamp(16px, 2.5vh, 20px);
+      padding: clamp(18px, 3vh, 24px);
+      box-shadow: 0 4px 20px rgba(99, 110, 114, 0.12);
       display: flex;
-      flex-direction: column;
-      justify-content: center;
+      align-items: flex-start;
+      gap: clamp(14px, 3vw, 20px);
+      transition: all 0.3s ease;
+      border-left: 4px solid transparent;
     }
 
-    .prediction-detail h4 {
-      font-size: 18px;
-      margin-bottom: 15px;
+    .suggestion-card:nth-child(1) { border-left-color: #ee5a6f; }
+    .suggestion-card:nth-child(2) { border-left-color: #0fb9b1; }
+    .suggestion-card:nth-child(3) { border-left-color: #3c6382; }
+    .suggestion-card:nth-child(4) { border-left-color: #f79f1f; }
+
+    .suggestion-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 28px rgba(99, 110, 114, 0.2);
+    }
+
+    .suggestion-icon {
+      font-size: clamp(28px, 5vw, 40px);
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .suggestion-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .suggestion-title {
+      font-size: clamp(14px, 2vw, 16px);
       font-weight: 600;
-      color: #f0f0f0;
+      color: #2f3542;
+      margin-bottom: clamp(6px, 1vh, 8px);
     }
 
-    .prediction-detail .value {
-      font-size: 38px;
-      font-weight: bold;
-      margin: 10px 0;
+    .suggestion-text {
+      font-size: clamp(12px, 1.8vw, 14px);
+      color: #57606f;
+      line-height: 1.5;
     }
 
-    .prediction-detail .label {
-      font-size: 14px;
-      color: #e0e0e0;
+    /* Tomorow Forecast - Side panel on desktop, full width on mobile */
+    .predictions-panel {
+      grid-column: 1 / -1;
+      background: #f5f6fa;
+      border-radius: clamp(20px, 3vh, 28px);
+      padding: clamp(24px, 4vh, 36px) clamp(24px, 4vh, 36px) clamp(20px, 3vh, 28px);
+      box-shadow: 0 8px 32px rgba(99, 110, 114, 0.15);
     }
 
-    footer {
-      max-height: 10vh;
-      min-height: 10vh;
-      text-align: center;
-      padding: 15px;
-      font-size: 14px;
-      background: rgba(0, 0, 0, 0.2);
+    .panel-header {
+      font-size: clamp(18px, 2.8vw, 24px);
+      font-weight: 600;
+      color: #2f3542;
+      margin-bottom: clamp(20px, 3vh, 28px);
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: clamp(8px, 1.5vw, 12px);
     }
 
-    footer p {
-      margin: 0;
-      font-size: 1rem;
+    .predictions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+      gap: clamp(16px, 2.5vh, 24px);
     }
 
-    @media (max-width: 992px) {
-      .main-container {
-        flex-direction: column;
-        overflow-y: auto;
-        height: auto;
-        min-height: 80vh;
+    .prediction-item {
+      background: linear-gradient(135deg, #dfe4ea 0%, #ced6e0 100%);
+      border-radius: clamp(14px, 2.2vh, 18px);
+      padding: clamp(20px, 3vh, 28px);
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .prediction-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, #3c6382 0%, #0c2461 100%);
+    }
+
+    .prediction-item:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 20px rgba(60, 99, 130, 0.25);
+    }
+
+    .prediction-label {
+      font-size: clamp(12px, 1.8vw, 14px);
+      color: #747d8c;
+      margin-bottom: clamp(10px, 1.5vh, 14px);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .prediction-value {
+      font-size: clamp(24px, 4vw, 32px);
+      font-weight: 600;
+      color: #3c6382;
+      margin-bottom: clamp(6px, 1vh, 8px);
+    }
+
+    .season-badge {
+      background: linear-gradient(135deg, #3c6382 0%, #0c2461 100%);
+      color: white;
+      padding: clamp(10px, 1.5vh, 14px) clamp(20px, 4vw, 28px);
+      border-radius: clamp(20px, 3vh, 28px);
+      font-size: clamp(14px, 2vw, 16px);
+      font-weight: 500;
+      display: inline-block;
+      box-shadow: 0 4px 12px rgba(60, 99, 130, 0.3);
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: clamp(20px, 3vh, 32px);
+      color: #2f3542;
+      font-size: clamp(13px, 1.8vw, 14px);
+      background: rgba(223, 228, 234, 0.5);
+      margin-top: clamp(24px, 4vh, 40px);
+    }
+
+    /* Responsive Adjustments */
+    @media (min-width: 768px) {
+      .weather-hero {
+        grid-column: 1 / 9;
       }
 
-      .section {
+      .predictions-panel {
+        grid-column: 9 / -1;
+        grid-row: 1 / 2;
+        align-self: start;
+      }
+
+      .suggestions-container {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .suggestions-container {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .weather-stats {
+        grid-template-columns: repeat(6, 1fr);
+      }
+    }
+
+    @media (max-width: 767px) {
+      .header-content {
+        justify-content: center;
+      }
+
+      .nav-links {
+        order: 3;
         width: 100%;
+        justify-content: center;
+      }
+
+      .weather-stats {
+        grid-template-columns: repeat(3, 1fr);
       }
     }
+
+    @media (max-width: 480px) {
+      .weather-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* Animation */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .weather-hero,
+    .suggestion-card,
+    .predictions-panel {
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .suggestion-card:nth-child(2) { animation-delay: 0.1s; }
+    .suggestion-card:nth-child(3) { animation-delay: 0.2s; }
+    .suggestion-card:nth-child(4) { animation-delay: 0.3s; }
   </style>
+
+  <script>
+  // Apply saved Theme Mode
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme) {
+    document.documentElement.setAttribute("data-theme", savedTheme);
+  }
+
+  // Apply saved Colorblind Mode
+  const savedColorblind = localStorage.getItem("colorblind");
+  if (savedColorblind === "on") {
+    document.body.classList.add("colorblind-mode");
+  }
+</script>
+
 </head>
-
 <body>
-  <header>
-    <nav class="navbar navbar-expand-lg bg-body-tertiary"
-      style="border-radius: 0 0 1rem 1rem; background-color: rgba(0, 0, 0, 0.1) !important; flex-wrap: wrap;">
-      <div class="container-fluid">
-        <form method="get" action="{% url 'today' %}" class="d-flex" style="margin-right: 15px;">
-          <select name="city" class="form-select form-select-sm" onchange="this.form.submit()">
-            <option value="ahmedabad" {% if city_key == "ahmedabad" %}selected{% endif %}>
-              Ahmedabad
-            </option>
-            <option value="surat" {% if city_key == "surat" %}selected{% endif %}>
-              Surat
-            </option>
-            <option value="vadodara" {% if city_key == "vadodara" %}selected{% endif %}>
-              Vadodara
-            </option>
-            <option value="rajkot" {% if city_key == "rajkot" %}selected{% endif %}>
-              Rajkot
-            </option>
-            <option value="gandhinagar" {% if city_key == "gandhinagar" %}selected{% endif %}>
-              Gandhinagar
-            </option>
-          </select>
-        </form>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <form method="get" action="{% url 'today' %}">
+        <select name="city" class="city-selector" onchange="this.form.submit()">
+          <option value="ahmedabad" {% if city_key == "ahmedabad" %}selected{% endif %}>Ahmedabad</option>
+          <option value="surat" {% if city_key == "surat" %}selected{% endif %}>Surat</option>
+          <option value="vadodara" {% if city_key == "vadodara" %}selected{% endif %}>Vadodara</option>
+          <option value="rajkot" {% if city_key == "rajkot" %}selected{% endif %}>Rajkot</option>
+          <option value="gandhinagar" {% if city_key == "gandhinagar" %}selected{% endif %}>Gandhinagar</option>
+        </select>
+      </form>
 
-        <div class="collapse navbar-collapse" id="navbarNavAltMarkup" style="justify-content: flex-end;">
-          <div class="navbar-nav">
-            <a class="nav-link" href="{% url 'today' %}">Today</a>
-            <a class="nav-link" href="{% url 'hourly' %}">Hourly</a>
-            <a class="nav-link" href="{% url '10day' %}">10 Day</a>
-            <a class="nav-link" href="{% url 'monthly' %}">Monthly</a>
-            <a class="nav-link" href="{% url 'image' %}">From Image</a>
-          </div>
-          <button id="toggleMode">🌙</button>
-        </div>
-      </div>
-    </nav>
-  </header>
-
-  <div class="main-container">
-    <!-- Left Section: Smart Suggestions -->
-    {% if suggestions %}
-    <div class="section">
-      <h2 class="suggestions-header">💡 Smart Suggestions</h2>
-      
-      {% if suggestions.clothing %}
-      <div class="suggestion-card">
-        <h3>👕 What to Wear</h3>
-        <p>{{ suggestions.clothing }}</p>
-      </div>
-      {% endif %}
-      
-      {% if suggestions.activities %}
-      <div class="suggestion-card">
-        <h3>🎯 Activities</h3>
-        <p>{{ suggestions.activities }}</p>
-      </div>
-      {% endif %}
-      
-      {% if suggestions.health %}
-      <div class="suggestion-card">
-        <h3>💪 Health Tips</h3>
-        <p>{{ suggestions.health }}</p>
-      </div>
-      {% endif %}
-      
-      {% if suggestions.travel %}
-      <div class="suggestion-card">
-        <h3>🚗 Travel Advice</h3>
-        <p>{{ suggestions.travel }}</p>
-      </div>
-      {% endif %}
-    </div>
-    {% endif %}
-
-    <!-- Middle Section: Today Weather -->
-    <div class="section middle-section">
-      <div class="container-box" style="flex: 1;">
-        {% if today_data %}
-        <div style="display: flex; flex-direction: column; height: 100%;">
-          <div class="main-weather">
-            <div class="weather-icon">
-              <img src="https://openweathermap.org/img/wn/{{ today_data.icon }}@2x.png" alt="Weather Icon">
-            </div>
-            <h1 class="city">{{ today_data.city }}</h1>
-            <h2 class="temp">{{ today_data.temp }}°C</h2>
-            <p class="condition">{{ today_data.description }}</p>
-            <p class="condition" style="font-size: 15px; margin-top: 5px;">Feels Like: {{ today_data.feels_like }}°C</p>
-          </div>
-
-          <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-around;">
-            <div class="details">
-              <div class="box">💨 Wind<br><span>{{ today_data.wind_kmh }}</span></div>
-              <div class="box">💧 Humidity<br><span>{{ today_data.humidity }}</span></div>
-              <div class="box">🌅 Sunrise<br><span>{{ today_data.sunrise }}</span></div>
-            </div>
-
-            <div class="forecast">
-              <div class="day">❄️ Min<br><span>{{ today_data.min_temp }}°C</span></div>
-              <div class="day">🔥 Max<br><span>{{ today_data.max_temp }}°C</span></div>
-              <div class="day">🌄 Sunset<br><span>{{ today_data.sunset }}</span></div>
-            </div>
-          </div>
-        </div>
-
-        {% else %}
-        <p class="text-center">Weather data not available.</p>
-        {% endif %}
-      </div>
-    </div>
-
-    <!-- Right Section: ML Prediction -->
-    <div class="section right-section">
-      <h2 class="prediction-header">🤖 ML Prediction</h2>
-      
-      <div class="prediction-detail">
-        <h4>🌡️ Predicted Temperature</h4>
-        <div class="value">{{ pred_temp }}°C</div>
+      <div class="nav-links">
+        <a href="{% url 'today' %}">Today</a>
+        <a href="{% url 'hourly' %}">Hourly</a>
+        <a href="{% url '10day' %}">10 Day</a>
+        <a href="{% url 'monthly' %}">Monthly</a>
+        <a href="{% url 'image' %}">Image</a>
       </div>
 
-      <div class="prediction-detail">
-        <h4>🌤️ Predicted Weather</h4>
-        <div class="value" style="font-size: 28px;">{{ pred_weather_type }}</div>
-      </div>
-
-      <div class="prediction-detail">
-        <h4>🍂 Current Season</h4>
-        <div class="value" style="font-size: 28px;">{{ season|title }}</div>
-      </div>
+      <button id="colorblindMode" class="colorblind-btn" title="Toggle Colorblind Mode">👁️</button>
+      <button id="toggleMode" class="toggle-btn" onclick="toggleTheme()">🌙</button>
     </div>
   </div>
 
-  <footer>
-    <p>&copy; 2025 Ahmedabad Weather</p>
-  </footer>
+  <!-- Main Container -->
+  <div class="container">
+    <div class="dashboard-grid">
+      
+      <!-- Weather Hero Section -->
+      {% if today_data %}
+      <div class="weather-hero">
+        <div class="weather-icon-wrapper">
+          <img src="https://openweathermap.org/img/wn/{{ today_data.icon }}@2x.png" alt="Weather Icon">
+        </div>
+        <div class="city-name">{{ today_data.city }}</div>
+        <div class="temperature">{{ today_data.temp }}°</div>
+        <div class="condition">{{ today_data.description }}</div>
+        <div class="feels-like">Feels Like {{ today_data.feels_like }}°C</div>
+        
+        <div class="weather-stats">
+          <div class="stat-item">
+            <div class="stat-label">Wind</div>
+            <div class="stat-value">{{ today_data.wind_kmh }}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Humidity</div>
+            <div class="stat-value">{{ today_data.humidity }}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Min Temp</div>
+            <div class="stat-value">{{ today_data.min_temp }}°C</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Max Temp</div>
+            <div class="stat-value">{{ today_data.max_temp }}°C</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Sunrise</div>
+            <div class="stat-value">{{ today_data.sunrise }}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Sunset</div>
+            <div class="stat-value">{{ today_data.sunset }}</div>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="weather-hero">
+        <p style="color: #607d8b;">Weather data not available.</p>
+      </div>
+      {% endif %}
+
+      <!-- Tomorow Forecast Panel -->
+      <div class="predictions-panel">
+        <div class="panel-header">
+          <span>⏭️🌤️</span>
+          <span>Tomorow Forecast</span>
+        </div>
+        
+        <div class="predictions-grid">
+          <div class="prediction-item">
+            <div class="prediction-label">Temperature</div>
+            <div class="prediction-value">{{ pred_temp }}°C</div>
+          </div>
+          
+          <div class="prediction-item">
+            <div class="prediction-label">Weather Type</div>
+            <div class="prediction-value" style="font-size: clamp(18px, 3vw, 22px);">{{ pred_weather_type }}</div>
+          </div>
+          
+          <div class="prediction-item" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
+            <div class="prediction-label">Current Season</div>
+            <span class="season-badge">{{ season|title }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Smart Suggestions -->
+      {% if suggestions %}
+      <div class="suggestions-container">
+        {% if suggestions.clothing %}
+        <div class="suggestion-card">
+          <div class="suggestion-icon">👕</div>
+          <div class="suggestion-content">
+            <div class="suggestion-title">What to Wear</div>
+            <div class="suggestion-text">{{ suggestions.clothing }}</div>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if suggestions.activities %}
+        <div class="suggestion-card">
+          <div class="suggestion-icon">🎯</div>
+          <div class="suggestion-content">
+            <div class="suggestion-title">Activities</div>
+            <div class="suggestion-text">{{ suggestions.activities }}</div>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if suggestions.health %}
+        <div class="suggestion-card">
+          <div class="suggestion-icon">💪</div>
+          <div class="suggestion-content">
+            <div class="suggestion-title">Health Tips</div>
+            <div class="suggestion-text">{{ suggestions.health }}</div>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if suggestions.travel %}
+        <div class="suggestion-card">
+          <div class="suggestion-icon">🚗</div>
+          <div class="suggestion-content">
+            <div class="suggestion-title">Travel Advice</div>
+            <div class="suggestion-text">{{ suggestions.travel }}</div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>&copy; 2025 Weather Dashboard | Made with 💙</p>
+  </div>
+
 
   <script>
-    const toggleBtn = document.getElementById("toggleMode");
-    const body = document.body;
-    let darkMode = false;
+    document.addEventListener("DOMContentLoaded", function () {
 
-    toggleBtn.addEventListener("click", () => {
-      darkMode = !darkMode;
-      if (darkMode) {
-        body.style.background = "linear-gradient(to bottom, #232526, #414345)";
-        toggleBtn.textContent = "☀️";
-      } else {
-        body.style.background = "linear-gradient(to bottom, #2193b0, #6dd5ed)";
-        toggleBtn.textContent = "🌙";
+      // -----------------------------
+      // 1) RESTORE DARK MODE
+      // -----------------------------
+      let savedDark = localStorage.getItem("darkMode");
+
+      if (savedDark === "true") {
+        // Simulate the button click so that ALL your styles apply
+        document.getElementById("toggleMode").click();
+      }
+
+      // -----------------------------
+      // 2) RESTORE COLORBLIND MODE
+      // -----------------------------
+      let savedCB = localStorage.getItem("colorblindMode");
+
+      if (savedCB === "true") {
+        document.getElementById("colorblindMode").click();
       }
     });
   </script>
-</body>
 
+
+  <script>
+    const toggleBtn = document.getElementById("toggleMode");
+    const colorblindBtn = document.getElementById("colorblindMode");
+    const body = document.body;
+    let darkMode = false;
+    let colorblindMode = false;
+
+    // Colorblind mode toggle
+    colorblindBtn.addEventListener("click", function() {
+      colorblindMode = !colorblindMode;
+      localStorage.setItem("colorblindMode", colorblindMode);
+
+      console.log("Colorblind mode toggled:", colorblindMode);
+      
+      if (colorblindMode) {
+        body.classList.add('colorblind-mode');
+        colorblindBtn.style.background = '#ff6b6b';
+        colorblindBtn.textContent = "👁️‍🗨️";
+      } else {
+        body.classList.remove('colorblind-mode');
+        colorblindBtn.style.background = '#dfe4ea';
+        colorblindBtn.textContent = "👁️";
+      }
+    });
+
+    // Dark/Light mode toggle
+    toggleBtn.addEventListener("click", function() {
+      darkMode = !darkMode;
+      localStorage.setItem("darkMode", darkMode);
+      if (darkMode) {
+        // Dark Mode - Dark background, Light text
+        body.style.background = "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)";
+        toggleBtn.textContent = "☀️";
+        toggleBtn.style.background = "#ffd700";
+        
+        // Header
+        document.querySelector('.header').style.background = '#1f2937';
+        document.querySelectorAll('.nav-links a').forEach(el => {
+          el.style.color = '#e2e8f0';
+        });
+        document.querySelector('.city-selector').style.background = '#374151';
+        document.querySelector('.city-selector').style.color = '#e2e8f0';
+        document.querySelector('.city-selector').style.borderColor = '#4b5563';
+        
+        // Main cards - Dark background, Light text
+        document.querySelectorAll('.weather-hero, .suggestion-card, .predictions-panel').forEach(el => {
+          el.style.background = '#1f2937';
+          el.style.color = '#f3f4f6';
+        });
+        
+        // City name and labels
+        document.querySelectorAll('.city-name, .panel-header').forEach(el => {
+          el.style.color = '#f3f4f6';
+        });
+        
+        // Temperature - Keep blue but lighter
+        document.querySelectorAll('.temperature').forEach(el => {
+          el.style.color = '#60a5fa';
+        });
+        
+        // Condition and secondary text
+        document.querySelectorAll('.condition, .feels-like, .suggestion-text').forEach(el => {
+          el.style.color = '#d1d5db';
+        });
+        
+        // Labels
+        document.querySelectorAll('.stat-label, .metric-label, .prediction-label, .forecast-label').forEach(el => {
+          el.style.color = '#9ca3af';
+        });
+        
+        // Values
+        document.querySelectorAll('.stat-value, .metric-value, .suggestion-title').forEach(el => {
+          el.style.color = '#f3f4f6';
+        });
+        
+        // Stat and prediction items
+        document.querySelectorAll('.stat-item, .prediction-item').forEach(el => {
+          el.style.background = 'linear-gradient(135deg, #374151 0%, #1f2937 100%)';
+        });
+        
+        // Prediction values
+        document.querySelectorAll('.prediction-value').forEach(el => {
+          el.style.color = '#60a5fa';
+        });
+        
+        // Footer
+        document.querySelector('.footer').style.background = 'rgba(31, 41, 55, 0.5)';
+        document.querySelector('.footer').style.color = '#e2e8f0';
+        
+      } else {
+        // Light Mode - Light background, Dark text
+        body.style.background = "linear-gradient(135deg, #c8d6e5 0%, #8395a7 100%)";
+        toggleBtn.textContent = "🌙";
+        toggleBtn.style.background = "#dfe4ea";
+        
+        // Header
+        document.querySelector('.header').style.background = '#f5f6fa';
+        document.querySelectorAll('.nav-links a').forEach(el => {
+          el.style.color = '#2f3542';
+        });
+        document.querySelector('.city-selector').style.background = 'white';
+        document.querySelector('.city-selector').style.color = '#2f3542';
+        document.querySelector('.city-selector').style.borderColor = '#dfe4ea';
+        
+        // Main cards - Light background, Dark text
+        document.querySelectorAll('.weather-hero, .suggestion-card, .predictions-panel').forEach(el => {
+          el.style.background = '#f5f6fa';
+          el.style.color = '#2f3542';
+        });
+        
+        // City name and labels
+        document.querySelectorAll('.city-name, .panel-header').forEach(el => {
+          el.style.color = '#2f3542';
+        });
+        
+        // Temperature - Blue
+        document.querySelectorAll('.temperature').forEach(el => {
+          el.style.color = '#3c6382';
+        });
+        
+        // Condition and secondary text
+        document.querySelectorAll('.condition, .feels-like, .suggestion-text').forEach(el => {
+          el.style.color = '#57606f';
+        });
+        
+        // Labels
+        document.querySelectorAll('.stat-label, .metric-label, .prediction-label, .forecast-label').forEach(el => {
+          el.style.color = '#747d8c';
+        });
+        
+        // Values
+        document.querySelectorAll('.stat-value, .metric-value, .suggestion-title').forEach(el => {
+          el.style.color = '#2f3542';
+        });
+        
+        // Stat and prediction items
+        document.querySelectorAll('.stat-item, .prediction-item').forEach(el => {
+          el.style.background = 'linear-gradient(135deg, #dfe4ea 0%, #ced6e0 100%)';
+        });
+        
+        // Prediction values
+        document.querySelectorAll('.prediction-value').forEach(el => {
+          el.style.color = '#3c6382';
+        });
+        
+        // Footer
+        document.querySelector('.footer').style.background = 'rgba(223, 228, 234, 0.5)';
+        document.querySelector('.footer').style.color = '#2f3542';
+      }
+    });
+  </script>
+  
+</body>
 </html>

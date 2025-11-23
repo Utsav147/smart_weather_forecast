@@ -1,189 +1,533 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hisatorical Weather - {{ city_key|upper }} </title>
-  <!-- <link rel="stylesheet" href="{% static 'myapp/style.css' %}"> -->
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 
+  <script>
+  // Apply saved theme immediately on load
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme) {
+      document.documentElement.setAttribute("data-theme", savedTheme);
+  }
+</script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Historical Weather - {{ city_key|upper }}</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #c8d6e5 0%, #8395a7 100%);
       min-height: 100vh;
-      background: linear-gradient(to bottom, #2193b0, #6dd5ed);
-      color: white;
-      font-family: 'Segoe UI', sans-serif;
     }
 
-    header {
-      max-height: 10vh;
-      min-height: 10vh;
-      border-radius: 0 0 1rem 1rem;
-      position: relative;
-      z-index: 10;
+    /* Header */
+    .header {
+      background: #f5f6fa;
+      padding: clamp(12px, 2vh, 20px) clamp(16px, 4vw, 40px);
+      box-shadow: 0 2px 12px rgba(99, 110, 114, 0.15);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
-    a.nav-link {
-      color: white;
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: clamp(12px, 2vw, 24px);
+      flex-wrap: wrap;
     }
 
-    a.nav-link:hover {
-      color: rgba(11, 11, 11, 0.5);
+    .city-selector {
+      padding: clamp(8px, 1vh, 12px) clamp(12px, 2vw, 20px);
+      border: 2px solid #dfe4ea;
+      border-radius: 12px;
+      font-size: clamp(13px, 1.8vh, 15px);
+      color: #2f3542;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
     }
 
-    h1 a {
-      font-size: 1.8rem;
+    .city-selector:hover {
+      border-color: #57606f;
+      box-shadow: 0 2px 8px rgba(87, 96, 111, 0.2);
     }
 
-    #toggleMode {
-      background: rgba(255, 255, 255, 0.2);
+    .nav-links {
+      display: flex;
+      gap: clamp(8px, 1.5vw, 16px);
+      flex-wrap: wrap;
+    }
+
+    .nav-links a {
+      padding: clamp(8px, 1vh, 12px) clamp(12px, 2vw, 18px);
+      color: #2f3542;
+      text-decoration: none;
+      border-radius: 10px;
+      font-size: clamp(13px, 1.6vh, 14px);
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .nav-links a:hover {
+      background: #dfe4ea;
+      transform: translateY(-1px);
+    }
+
+    .toggle-btn {
+      background: #dfe4ea;
       border: none;
       border-radius: 50%;
-      padding: 8px;
+      padding: clamp(8px, 1.2vh, 12px);
       cursor: pointer;
+      font-size: clamp(16px, 2.2vh, 20px);
+      transition: all 0.3s ease;
+      min-width: clamp(36px, 5vh, 44px);
+      min-height: clamp(36px, 5vh, 44px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .container-box {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 20px;
-      padding: 20px;
-      backdrop-filter: blur(10px);
-      margin-top: 30px;
+    .toggle-btn:hover {
+      background: #a4b0be;
+      transform: rotate(20deg) scale(1.1);
     }
 
-    .hour-row {
+    .colorblind-btn {
+      background: #dfe4ea;
+      border: none;
+      border-radius: 50%;
+      padding: clamp(8px, 1.2vh, 12px);
+      cursor: pointer;
+      font-size: clamp(16px, 2.2vh, 20px);
+      transition: all 0.3s ease;
+      min-width: clamp(36px, 5vh, 44px);
+      min-height: clamp(36px, 5vh, 44px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .colorblind-btn:hover {
+      background: #a4b0be;
+      transform: scale(1.1);
+    }
+
+    /* Colorblind Mode */
+    body.colorblind-mode {
+      background: #1a1a1a !important;
+    }
+
+    body.colorblind-mode .header {
+      background: #000000 !important;
+    }
+
+    body.colorblind-mode .calendar-container {
+      background: #0a0a0f !important;
+      color: #ffffff !important;
+    }
+
+    body.colorblind-mode .page-title {
+      color: #ffffff !important;
+    }
+
+    body.colorblind-mode .weekday-header {
+      background: linear-gradient(135deg, #00ff00 0%, #00cc00 100%) !important;
+      color: #000000 !important;
+    }
+
+    body.colorblind-mode .day-cell {
+      background: #1a1a1a !important;
+      color: #ffffff !important;
+      border-color: #444444 !important;
+    }
+
+    body.colorblind-mode .day-cell strong {
+      color: #ffff00 !important;
+    }
+
+    body.colorblind-mode .day-cell .temp {
+      color: #ff0000 !important;
+    }
+
+    body.colorblind-mode .nav-links a,
+    body.colorblind-mode .city-selector {
+      color: #ffffff !important;
+      background: #2a2a2a !important;
+      border-color: #444444 !important;
+    }
+
+    body.colorblind-mode .footer {
+      background: rgba(0, 0, 0, 0.8) !important;
+      color: #ffffff !important;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: clamp(16px, 3vh, 32px) clamp(16px, 4vw, 40px);
+    }
+
+    .page-title {
+      font-size: clamp(24px, 4vw, 36px);
+      font-weight: 600;
+      color: #2f3542;
+      text-align: center;
+      margin-bottom: clamp(24px, 4vh, 40px);
+    }
+
+    .calendar-container {
+      background: #f5f6fa;
+      border-radius: clamp(20px, 3vh, 28px);
+      padding: clamp(24px, 4vh, 40px) clamp(20px, 4vw, 36px);
+      box-shadow: 0 8px 32px rgba(99, 110, 114, 0.15);
+    }
+
+    .weekdays {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      padding: 12px 16px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      margin-bottom: 10px;
-      font-size: 14px;
+      grid-template-columns: repeat(7, 1fr);
+      gap: clamp(8px, 1.5vh, 12px);
+      margin-bottom: clamp(16px, 2.5vh, 20px);
+    }
+
+    .weekday-header {
+      text-align: center;
+      font-weight: 600;
+      font-size: clamp(13px, 1.8vw, 15px);
       color: white;
+      background: linear-gradient(135deg, #3c6382 0%, #0c2461 100%);
+      padding: clamp(10px, 1.5vh, 14px);
+      border-radius: 10px;
     }
 
-    .hour-row.header {
-      font-weight: bold;
-      background: rgba(255, 255, 255, 0.3);
-      color: #222;
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: clamp(8px, 1.5vh, 12px);
     }
 
-    .hour-row span {
+    .day-cell {
+      background: linear-gradient(135deg, #dfe4ea 0%, #ced6e0 100%);
+      border-radius: 12px;
+      padding: clamp(12px, 2vh, 16px);
+      min-height: clamp(70px, 10vh, 90px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       text-align: center;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
     }
 
-    h2 {
-      text-align: center;
-      margin-bottom: 30px;
+    .day-cell:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 20px rgba(99, 110, 114, 0.2);
+      border-color: #3c6382;
+      background: linear-gradient(135deg, #c8d6e5 0%, #b2bec3 100%);
+    }
+
+    .day-cell strong {
+      font-size: clamp(14px, 2vw, 16px);
+      color: #2f3542;
+      margin-bottom: clamp(4px, 0.8vh, 6px);
       font-weight: 600;
     }
 
-
-    footer {
-      text-align: center;
-      padding: 15px;
-      font-size: 14px;
-      margin-top: 40px;
-      background: rgba(0, 0, 0, 0.2);
+    .day-cell .temp {
+      font-size: clamp(12px, 1.6vw, 14px);
+      color: #3c6382;
+      font-weight: 500;
     }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: clamp(20px, 3vh, 32px);
+      color: #2f3542;
+      font-size: clamp(13px, 1.8vw, 14px);
+      background: rgba(223, 228, 234, 0.5);
+      margin-top: clamp(24px, 4vh, 40px);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .calendar-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .weekdays {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .weekday-header:nth-child(n+5) {
+        display: none;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .calendar-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .weekdays {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .weekday-header:nth-child(n+3) {
+        display: none;
+      }
+
+      .header-content {
+        justify-content: center;
+      }
+
+      .nav-links {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    /* Animation */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .calendar-container {
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .day-cell {
+      animation: fadeInUp 0.4s ease-out forwards;
+    }
+
+    .day-cell:nth-child(1) { animation-delay: 0.05s; }
+    .day-cell:nth-child(2) { animation-delay: 0.1s; }
+    .day-cell:nth-child(3) { animation-delay: 0.15s; }
+    .day-cell:nth-child(4) { animation-delay: 0.2s; }
+    .day-cell:nth-child(5) { animation-delay: 0.25s; }
+    .day-cell:nth-child(6) { animation-delay: 0.3s; }
+    .day-cell:nth-child(7) { animation-delay: 0.35s; }
   </style>
 </head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <form method="get" action="{% url 'monthly' %}">
+        <select name="city" class="city-selector" onchange="this.form.submit()">
+          <option value="ahmedabad" {% if city_key == "ahmedabad" %}selected{% endif %}>Ahmedabad</option>
+          <option value="surat" {% if city_key == "surat" %}selected{% endif %}>Surat</option>
+          <option value="vadodara" {% if city_key == "vadodara" %}selected{% endif %}>Vadodara</option>
+          <option value="rajkot" {% if city_key == "rajkot" %}selected{% endif %}>Rajkot</option>
+          <option value="gandhinagar" {% if city_key == "gandhinagar" %}selected{% endif %}>Gandhinagar</option>
+        </select>
+      </form>
 
-
-
-<body class="monthly-page">
-  <header>
-    <nav class="navbar navbar-expand-lg bg-body-tertiary"
-      style="border-radius: 0 0 1rem 1rem; background-color: rgba(0, 0, 0, 0.1) !important; flex-wrap: wrap;">
-      <div class="container-fluid">
-        <form method="get" action="{% url 'monthly' %}" class="d-flex" style="margin-right: 15px;">
-          <select name="city" class="form-select form-select-sm" onchange="this.form.submit()">
-            <option value="ahmedabad" {% if city_key == "ahmedabad" %}selected{% endif %}>
-              Ahmedabad
-            </option>
-            <option value="surat" {% if city_key == "surat" %}selected{% endif %}>
-              Surat
-            </option>
-            <option value="vadodara" {% if city_key == "vadodara" %}selected{% endif %}>
-              Vadodara
-            </option>
-            <option value="rajkot" {% if city_key == "rajkot" %}selected{% endif %}>
-              Rajkot
-            </option>
-            <option value="gandhinagar" {% if city_key == "gandhinagar" %}selected{% endif %}>
-              Gandhinagar
-            </option>
-          </select>
-        </form>
-        <div class="collapse navbar-collapse" id="navbarNavAltMarkup" style="justify-content: flex-end;">
-          <div class="navbar-nav">
-            <a class="nav-link" href="{% url 'today' %}">Today</a>
-            <a class="nav-link" href="{% url 'hourly' %}">Hourly</a>
-            <a class="nav-link" href="{% url '10day' %}">10 Day</a>
-            <a class="nav-link" href="{% url 'monthly' %}">Monthly</a>
-            <a class="nav-link" href="{% url 'image' %}">From Image</a>
-          </div>
-          <button id="toggleMode">🌙</button>
-        </div>
+      <div class="nav-links">
+        <a href="{% url 'today' %}">Today</a>
+        <a href="{% url 'hourly' %}">Hourly</a>
+        <a href="{% url '10day' %}">10 Day</a>
+        <a href="{% url 'monthly' %}">Monthly</a>
+        <a href="{% url 'image' %}">Image</a>
       </div>
-    </nav>
-  </header>
+
+      <button id="colorblindMode" class="colorblind-btn" title="Toggle Colorblind Mode">👁️</button>
+      <button id="toggleMode" class="toggle-btn" onclick="toggleTheme()">🌙</button>
+    </div>
+  </div>
+
+  <!-- Main Container -->
   <div class="container">
-<div class="container-box">
-  <h2>Historical data - Past 30 Days - {{ city_key|upper }}</h2>
-  <div class="row text-center fw-bold mb-3">
-    <div class="col">Sun</div>
-    <div class="col">Mon</div>
-    <div class="col">Tue</div>
-    <div class="col">Wed</div>
-    <div class="col">Thu</div>
-    <div class="col">Fri</div>
-    <div class="col">Sat</div>
-  </div>
+    <h1 class="page-title">📅 Historical Data - Past 30 Days - {{ city_key|upper }}</h1>
 
-  <div class="row text-center">
-    {% for day in result %}
-      <div class="col mb-3">
-        <div class="p-2 bg-white text-dark rounded" style="min-height: 70px; font-size: 14px;">
-          <strong>{{ day.label }}</strong><br>
-          {{ day.temp }}
-        </div>
+    <div class="calendar-container">
+      <div class="weekdays">
+        <div class="weekday-header">Sun</div>
+        <div class="weekday-header">Mon</div>
+        <div class="weekday-header">Tue</div>
+        <div class="weekday-header">Wed</div>
+        <div class="weekday-header">Thu</div>
+        <div class="weekday-header">Fri</div>
+        <div class="weekday-header">Sat</div>
       </div>
-      {% if forloop.counter|divisibleby:7 %}
-        </div><div class="row text-center">
-      {% endif %}
-    {% endfor %}
+
+      <div class="calendar-grid">
+        {% for day in result %}
+        <div class="day-cell">
+          <strong>{{ day.label }}</strong>
+          <span class="temp">{{ day.temp }}</span>
+        </div>
+        {% empty %}
+        <div class="day-cell" style="grid-column: 1 / -1;">
+          <span>No historical data available</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
   </div>
-</div>
 
+  <!-- Footer -->
+  <div class="footer">
+    <p>&copy; 2025 Weather Dashboard | Made with 💙</p>
   </div>
 
 
-  <footer>
-    &copy; 2025 Ahmedabad Weather
-  </footer>
 
   <script>
-    const toggleBtn = document.getElementById("toggleMode");
-    const body = document.body;
-    let darkMode = false;
+    document.addEventListener("DOMContentLoaded", function () {
 
-    toggleBtn.addEventListener("click", () => {
-      darkMode = !darkMode;
-      if (darkMode) {
-        body.style.background = "linear-gradient(to bottom, #232526, #414345)";
-        toggleBtn.textContent = "☀️";
-      } else {
-        body.style.background = "linear-gradient(to bottom, #2193b0, #6dd5ed)";
-        toggleBtn.textContent = "🌙";
+      // -----------------------------
+      // 1) RESTORE DARK MODE
+      // -----------------------------
+      let savedDark = localStorage.getItem("darkMode");
+
+      if (savedDark === "true") {
+        // Simulate the button click so that ALL your styles apply
+        document.getElementById("toggleMode").click();
+      }
+
+      // -----------------------------
+      // 2) RESTORE COLORBLIND MODE
+      // -----------------------------
+      let savedCB = localStorage.getItem("colorblindMode");
+
+      if (savedCB === "true") {
+        document.getElementById("colorblindMode").click();
       }
     });
   </script>
 
-</body>
+  <script>
+    const toggleBtn = document.getElementById("toggleMode");
+    const colorblindBtn = document.getElementById("colorblindMode");
+    const body = document.body;
+    let darkMode = false;
+    let colorblindMode = false;
 
+    // Colorblind mode toggle
+    colorblindBtn.addEventListener("click", function() {
+      colorblindMode = !colorblindMode;
+      localStorage.setItem("colorblindMode", colorblindMode);
+
+      console.log("Colorblind mode toggled:", colorblindMode);
+      
+      if (colorblindMode) {
+        body.classList.add('colorblind-mode');
+        colorblindBtn.style.background = '#ff6b6b';
+        colorblindBtn.textContent = "👁️‍🗨️";
+      } else {
+        body.classList.remove('colorblind-mode');
+        colorblindBtn.style.background = '#dfe4ea';
+        colorblindBtn.textContent = "👁️";
+      }
+    });
+
+    // Dark/Light mode toggle
+    toggleBtn.addEventListener("click", function() {
+      darkMode = !darkMode;
+      localStorage.setItem("darkMode", darkMode);
+
+      if (darkMode) {
+        // Dark Mode
+        body.style.background = "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)";
+        toggleBtn.textContent = "☀️";
+        toggleBtn.style.background = "#ffd700";
+        
+        // Header
+        document.querySelector('.header').style.background = '#1f2937';
+        document.querySelectorAll('.nav-links a').forEach(el => {
+          el.style.color = '#e2e8f0';
+        });
+        document.querySelector('.city-selector').style.background = '#374151';
+        document.querySelector('.city-selector').style.color = '#e2e8f0';
+        document.querySelector('.city-selector').style.borderColor = '#4b5563';
+        
+        // Page title
+        document.querySelector('.page-title').style.color = '#f3f4f6';
+        
+        // Container
+        document.querySelector('.calendar-container').style.background = '#1f2937';
+        
+        // Day cells
+        document.querySelectorAll('.day-cell').forEach(el => {
+          el.style.background = '#374151';
+          el.style.borderColor = '#4b5563';
+        });
+        
+        document.querySelectorAll('.day-cell strong').forEach(el => {
+          el.style.color = '#f3f4f6';
+        });
+        
+        document.querySelectorAll('.day-cell .temp').forEach(el => {
+          el.style.color = '#60a5fa';
+        });
+        
+        // Footer
+        document.querySelector('.footer').style.background = 'rgba(31, 41, 55, 0.5)';
+        document.querySelector('.footer').style.color = '#e2e8f0';
+        
+      } else {
+        // Light Mode
+        body.style.background = "linear-gradient(135deg, #c8d6e5 0%, #8395a7 100%)";
+        toggleBtn.textContent = "🌙";
+        toggleBtn.style.background = "#dfe4ea";
+        
+        // Header
+        document.querySelector('.header').style.background = '#f5f6fa';
+        document.querySelectorAll('.nav-links a').forEach(el => {
+          el.style.color = '#2f3542';
+        });
+        document.querySelector('.city-selector').style.background = 'white';
+        document.querySelector('.city-selector').style.color = '#2f3542';
+        document.querySelector('.city-selector').style.borderColor = '#dfe4ea';
+        
+        // Page title
+        document.querySelector('.page-title').style.color = '#2f3542';
+        
+        // Container
+        document.querySelector('.calendar-container').style.background = '#f5f6fa';
+        
+        // Day cells
+        document.querySelectorAll('.day-cell').forEach(el => {
+          el.style.background = 'linear-gradient(135deg, #dfe4ea 0%, #ced6e0 100%)';
+          el.style.borderColor = 'transparent';
+        });
+        
+        document.querySelectorAll('.day-cell strong').forEach(el => {
+          el.style.color = '#2f3542';
+        });
+        
+        document.querySelectorAll('.day-cell .temp').forEach(el => {
+          el.style.color = '#3c6382';
+        });
+        
+        // Footer
+        document.querySelector('.footer').style.background = 'rgba(223, 228, 234, 0.5)';
+        document.querySelector('.footer').style.color = '#2f3542';
+      }
+    });
+
+  </script>
+</body>
 </html>

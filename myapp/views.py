@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
-from datetime import datetime, timedelta
-from .models import MonthlyWeather
+from datetime import datetime, timedelta,date
+from .models import MonthlyWeather,SmartSuggestion
 import requests 
 from myapp.real_model_testing_3.predict_live import predict
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -85,11 +85,25 @@ def today_view(request):
 
 
 def get_weather_suggestions(weather_data, season, pred_temp, pred_weather):
-    import google.generativeai as genai
-    
-    # Configure Gemini API (add your API key in settings.py)
+
+    today = date.today()
+    city = weather_data['city'].lower().strip()
+
+    # Step 1 → Check if today’s suggestion exists for this city
+    try:
+        record = SmartSuggestion.objects.get(city=city, date=today)
+        return {
+            'clothing': record.clothing,
+            'activities': record.activities,
+            'health': record.health,
+            'travel': record.travel
+        }
+    except SmartSuggestion.DoesNotExist:
+        pass
+
+    # Step 2 → Call Gemini API because no stored record
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-    
+
     if not GEMINI_API_KEY:
         return {
             'clothing': 'Configure Gemini API key to get suggestions',
@@ -97,74 +111,70 @@ def get_weather_suggestions(weather_data, season, pred_temp, pred_weather):
             'health': '',
             'travel': ''
         }
-    
+
     try:
         genai.configure(api_key=GEMINI_API_KEY)
-        model = genai.GenerativeModel('gemini-2.5-flash')
-        
-# - Condition: {weather_data['condition']} - {weather_data['description']}
-        # Create comprehensive weather context
-        prompt = f"""Based on the following weather conditions, provide brief, max to max two line, practical suggestions and make sure that you provide the suggestion for indian gujarat weather:
+        model = genai.GenerativeModel("gemini-2.5-flash")
+
+        prompt = f"""Based on the following weather conditions, provide brief, practical suggestions (max 2 lines each) suitable for Gujarat, India:
 
 Current Weather:
 - City: {weather_data['city']}
 - Temperature: {weather_data['temp']}°C (Feels like: {weather_data['feels_like']}°C)
 - Humidity: {weather_data['humidity']}
-- Wind Speed: {weather_data['wind_kmh']}
-- Temperature Range: {weather_data['min_temp']}°C to {weather_data['max_temp']}°C
+- Wind: {weather_data['wind_kmh']} km/h
+- Range: {weather_data['min_temp']}°C to {weather_data['max_temp']}°C
 - Season: {season}
 - Predicted Temperature: {pred_temp}°C
 - Predicted Weather: {pred_weather}
 
-Provide 4 brief suggestions (2-3 sentences each) in the following categories:
-1. CLOTHING: What to wear today
-2. ACTIVITIES: Indoor/outdoor activity recommendations
-3. HEALTH: Health and wellness tips for this weather
-4. TRAVEL: Travel and commute advice
-
-Format your response EXACTLY as:
-CLOTHING: [suggestion]
-ACTIVITIES: [suggestion]
-HEALTH: [suggestion]
-TRAVEL: [suggestion]"""
+Provide EXACTLY 4 suggestions in this format:
+CLOTHING: text
+ACTIVITIES: text
+HEALTH: text
+TRAVEL: text
+"""
 
         response = model.generate_content(prompt)
-        suggestions_text = response.text
-        
-        # Parse the response
-        suggestions = {
-            'clothing': '',
-            'activities': '',
-            'health': '',
-            'travel': ''
-        }
-        
-        lines = suggestions_text.strip().split('\n')
-        current_category = None
-        
-        for line in lines:
+        text = response.text.strip()
+
+        result = {'clothing': '', 'activities': '', 'health': '', 'travel': ''}
+        category = None
+
+        for line in text.split("\n"):
             line = line.strip()
-            if line.startswith('CLOTHING:'):
-                current_category = 'clothing'
-                suggestions['clothing'] = line.replace('CLOTHING:', '').strip()
-            elif line.startswith('ACTIVITIES:'):
-                current_category = 'activities'
-                suggestions['activities'] = line.replace('ACTIVITIES:', '').strip()
-            elif line.startswith('HEALTH:'):
-                current_category = 'health'
-                suggestions['health'] = line.replace('HEALTH:', '').strip()
-            elif line.startswith('TRAVEL:'):
-                current_category = 'travel'
-                suggestions['travel'] = line.replace('TRAVEL:', '').strip()
-            elif current_category and line:
-                suggestions[current_category] += ' ' + line
-        
-        return suggestions
-        
+
+            if line.startswith("CLOTHING:"):
+                category = "clothing"
+                result[category] = line.replace("CLOTHING:", "").strip()
+            elif line.startswith("ACTIVITIES:"):
+                category = "activities"
+                result[category] = line.replace("ACTIVITIES:", "").strip()
+            elif line.startswith("HEALTH:"):
+                category = "health"
+                result[category] = line.replace("HEALTH:", "").strip()
+            elif line.startswith("TRAVEL:"):
+                category = "travel"
+                result[category] = line.replace("TRAVEL:", "").strip()
+            elif category:
+                result[category] += " " + line
+
+        # Step 3 → Save new suggestions (minimal DB store)
+        SmartSuggestion.objects.create(
+            city=city,
+            date=today,
+            clothing=result['clothing'],
+            activities=result['activities'],
+            health=result['health'],
+            travel=result['travel']
+        )
+
+        return result
+
     except Exception as e:
-        print(f"Error generating suggestions: {e}")
+        print("Gemini Suggestion Error:", e)
         return {
-            'clothing': 'Unable to generate suggestions at this time',
+            'clothing': 'Unable to generate suggestions',
             'activities': '',
             'health': '',
             'travel': ''

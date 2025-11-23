@@ -1,16 +1,19 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Image Caption Generator</title>
 
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+  // Apply saved theme immediately on load
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme) {
+      document.documentElement.setAttribute("data-theme", savedTheme);
+  }
+</script>
 
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Weather Analysis</title>
   <style>
     * {
       margin: 0;
@@ -19,236 +22,348 @@
     }
 
     body {
-      height: 100vh;
-      overflow: hidden;
-      background: linear-gradient(to bottom, #2193b0, #6dd5ed);
-      color: white;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #c8d6e5 0%, #8395a7 100%);
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background: #f5f6fa;
+      padding: clamp(12px, 2vh, 20px) clamp(16px, 4vw, 40px);
+      box-shadow: 0 2px 12px rgba(99, 110, 114, 0.15);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      gap: clamp(12px, 2vw, 24px);
+      flex-wrap: wrap;
     }
 
-    header {
-      height: 8vh;
-      border-radius: 0 0 1rem 1rem;
-      flex-shrink: 0;
+    .logo {
+      font-size: clamp(18px, 2.5vw, 24px);
+      font-weight: 600;
+      color: #2f3542;
+      text-decoration: none;
     }
 
-    .navbar {
-      padding: 0.3rem 1rem !important;
+    .nav-links {
+      display: flex;
+      gap: clamp(8px, 1.5vw, 16px);
+      flex-wrap: wrap;
     }
 
-    a.nav-link {
-      color: white;
-      padding: 0.3rem 0.7rem !important;
-      font-size: 0.9rem;
+    .nav-links a {
+      padding: clamp(8px, 1vh, 12px) clamp(12px, 2vw, 18px);
+      color: #2f3542;
+      text-decoration: none;
+      border-radius: 10px;
+      font-size: clamp(13px, 1.6vh, 14px);
+      transition: all 0.3s ease;
+      white-space: nowrap;
     }
 
-    a.nav-link:hover {
-      color: rgba(11, 11, 11, 0.5);
+    .nav-links a:hover {
+      background: #dfe4ea;
+      transform: translateY(-1px);
     }
 
-    h1 a {
-      font-size: 1.3rem;
-    }
-
-    #toggleMode {
-      background: rgba(255, 255, 255, 0.2);
+    .toggle-btn {
+      background: #dfe4ea;
       border: none;
       border-radius: 50%;
-      padding: 6px;
+      padding: clamp(8px, 1.2vh, 12px);
       cursor: pointer;
-      font-size: 0.9rem;
-    }
-
-    /* Main Content Area */
-    .main-content {
-      height: 86vh;
-      overflow: hidden;
-      padding: 8px 15px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .container {
-      max-width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 8px;
-      font-weight: 600;
-      font-size: 1.2rem;
-    }
-
-    .content-wrapper {
-      background: rgba(255, 255, 255, 0.2);
-      padding: 12px;
-      border-radius: 10px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .image-page input[type="file"] {
-      display: none;
-    }
-
-    .image-page .custom-file-upload {
-      border: 2px dashed #1e3a8a;
-      color: #1e3a8a;
-      padding: 8px 14px;
-      border-radius: 6px;
-      cursor: pointer;
-      display: inline-block;
-      font-size: 0.85rem;
-      margin-right: 10px;
-    }
-
-    .image-page .upload-btn {
-      background-color: #1e3a8a;
-      color: white;
-      padding: 8px 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.85rem;
-    }
-
-    .image-page .upload-btn:hover {
-      background-color: #334fb0;
-    }
-
-    footer {
-      height: 6vh;
+      font-size: clamp(16px, 2.2vh, 20px);
+      transition: all 0.3s ease;
+      min-width: clamp(36px, 5vh, 44px);
+      min-height: clamp(36px, 5vh, 44px);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.75rem;
-      background: rgba(0, 0, 0, 0.2);
-      flex-shrink: 0;
     }
 
-    /* Alert styles */
-    .alert-custom {
-      padding: 8px 12px;
-      border-radius: 6px;
-      margin: 8px 0;
-      font-weight: 500;
-      font-size: 0.8rem;
+    .toggle-btn:hover {
+      background: #a4b0be;
+      transform: rotate(20deg) scale(1.1);
     }
 
-    .alert-danger {
-      background: rgba(239, 68, 68, 0.9);
-      color: white;
-      border: 2px solid #dc2626;
+    .colorblind-btn {
+      background: #dfe4ea;
+      border: none;
+      border-radius: 50%;
+      padding: clamp(8px, 1.2vh, 12px);
+      cursor: pointer;
+      font-size: clamp(16px, 2.2vh, 20px);
+      transition: all 0.3s ease;
+      min-width: clamp(36px, 5vh, 44px);
+      min-height: clamp(36px, 5vh, 44px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .colorblind-btn:hover {
+      background: #a4b0be;
+      transform: scale(1.1);
+    }
+
+    /* Colorblind Mode */
+    body.colorblind-mode {
+      background: #1a1a1a !important;
+    }
+
+    body.colorblind-mode .header {
+      background: #000000 !important;
+    }
+
+    body.colorblind-mode .page-title,
+    body.colorblind-mode .logo {
+      color: #ffffff !important;
+    }
+
+    body.colorblind-mode .upload-container,
+    body.colorblind-mode .image-preview-box,
+    body.colorblind-mode .weather-analysis-box {
+      background: #0a0a0f !important;
+      color: #ffffff !important;
+    }
+
+    body.colorblind-mode .upload-label {
+      background: #2a2a2a !important;
+      border-color: #00ff00 !important;
+      color: #00ff00 !important;
+    }
+
+    body.colorblind-mode .upload-btn {
+      background: #00ff00 !important;
+      color: #000000 !important;
+    }
+
+    body.colorblind-mode .weather-item {
+      background: #1a1a1a !important;
+      border-left-color: #00ff00 !important;
+    }
+
+    body.colorblind-mode .weather-label {
+      color: #ffff00 !important;
+    }
+
+    body.colorblind-mode .weather-value {
+      color: #ffffff !important;
+    }
+
+    body.colorblind-mode .forecast-summary {
+      background: #2a2a2a !important;
+      color: #ffffff !important;
+    }
+
+    body.colorblind-mode .alert-danger {
+      background: #ff0000 !important;
+      color: #ffffff !important;
+    }
+
+    body.colorblind-mode .nav-links a {
+      color: #ffffff !important;
+      background: #2a2a2a !important;
+    }
+
+    body.colorblind-mode .footer {
+      background: rgba(0, 0, 0, 0.8) !important;
+      color: #ffffff !important;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: clamp(16px, 3vh, 32px) clamp(16px, 4vw, 40px);
+    }
+
+    .page-title {
+      font-size: clamp(24px, 4vw, 36px);
+      font-weight: 600;
+      color: #2f3542;
+      text-align: center;
+      margin-bottom: clamp(24px, 4vh, 40px);
     }
 
     /* Upload Section */
-    .upload-section {
+    .upload-container {
+      background: #f5f6fa;
+      border-radius: clamp(20px, 3vh, 28px);
+      padding: clamp(24px, 4vh, 40px) clamp(20px, 4vw, 36px);
+      box-shadow: 0 8px 32px rgba(99, 110, 114, 0.15);
       text-align: center;
-      margin-bottom: 10px;
+      margin-bottom: clamp(20px, 3vh, 30px);
+    }
+
+    .upload-label {
+      display: inline-block;
+      padding: clamp(12px, 2vh, 16px) clamp(20px, 4vw, 32px);
+      background: white;
+      color: #3c6382;
+      border: 2px dashed #3c6382;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: clamp(14px, 2vw, 16px);
+      font-weight: 600;
+      transition: all 0.3s ease;
+      margin-right: clamp(8px, 2vw, 12px);
+    }
+
+    .upload-label:hover {
+      background: #3c6382;
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    #id_image {
+      display: none;
+    }
+
+    .upload-btn {
+      display: none;
+      padding: clamp(12px, 2vh, 16px) clamp(20px, 4vw, 32px);
+      background: #3c6382;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: clamp(14px, 2vw, 16px);
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .upload-btn:hover {
+      background: #0c2461;
+      transform: translateY(-2px);
     }
 
     .file-info {
-      font-size: 0.7rem;
-      color: rgba(255,255,255,0.85);
-      margin-top: 5px;
+      margin-top: clamp(10px, 2vh, 14px);
+      font-size: clamp(11px, 1.6vw, 13px);
+      color: #747d8c;
     }
 
-    /* Layout Grid */
+    /* Alert */
+    .alert-danger {
+      background: #ee5a6f;
+      color: white;
+      padding: clamp(12px, 2vh, 16px);
+      border-radius: 12px;
+      margin-bottom: clamp(16px, 2.5vh, 20px);
+      font-size: clamp(13px, 1.8vw, 15px);
+      font-weight: 500;
+    }
+
+    /* Results Grid */
     .results-grid {
       display: grid;
-      grid-template-columns: 45% 55%;
-      gap: 12px;
-      flex: 1;
-      overflow: hidden;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(16px, 2.5vh, 24px);
     }
 
-    /* Image Section */
-    .image-section {
-      display: flex;
-      flex-direction: column;
+    /* Image Preview */
+    .image-preview-box {
+      background: #f5f6fa;
+      border-radius: clamp(20px, 3vh, 28px);
+      padding: clamp(20px, 3vh, 30px);
+      box-shadow: 0 8px 32px rgba(99, 110, 114, 0.15);
     }
 
-    .image-section h3 {
-      font-size: 0.9rem;
-      margin-bottom: 6px;
+    .section-title {
+      font-size: clamp(16px, 2.2vw, 20px);
+      font-weight: 600;
+      color: #2f3542;
+      margin-bottom: clamp(12px, 2vh, 16px);
+      text-align: center;
     }
 
     #fullPreview {
       width: 100%;
-      height: 100%;
+      height: auto;
+      max-height: 500px;
       object-fit: contain;
-      border-radius: 6px;
-      background: rgba(0, 0, 0, 0.3);
-      padding: 4px;
+      border-radius: 12px;
+      background: #dfe4ea;
     }
 
-    /* Weather forecast styles */
-    .weather-forecast-box {
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 8px;
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .forecast-header {
-      text-align: center;
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin-bottom: 8px;
-      padding-bottom: 6px;
-      border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    /* Weather Analysis */
+    .weather-analysis-box {
+      background: #f5f6fa;
+      border-radius: clamp(20px, 3vh, 28px);
+      padding: clamp(20px, 3vh, 30px);
+      box-shadow: 0 8px 32px rgba(99, 110, 114, 0.15);
     }
 
     .weather-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 6px;
-      margin-bottom: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: clamp(10px, 1.5vh, 14px);
+      margin-bottom: clamp(16px, 2.5vh, 20px);
     }
 
     .weather-item {
-      padding: 5px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
-      font-size: 0.7rem;
-      border-left: 2px solid #1e3a8a;
+      background: linear-gradient(135deg, #dfe4ea 0%, #ced6e0 100%);
+      padding: clamp(10px, 1.5vh, 14px);
+      border-radius: 10px;
+      border-left: 4px solid #3c6382;
+      transition: all 0.3s ease;
+    }
+
+    .weather-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(60, 99, 130, 0.2);
     }
 
     .weather-label {
+      font-size: clamp(11px, 1.5vw, 12px);
       font-weight: 600;
-      color: #e0f2fe;
+      color: #747d8c;
       display: block;
-      font-size: 0.65rem;
-      margin-bottom: 2px;
+      margin-bottom: clamp(4px, 0.8vh, 6px);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .weather-value {
+      font-size: clamp(13px, 1.8vw, 15px);
       font-weight: 500;
-      font-size: 0.75rem;
+      color: #2f3542;
     }
 
     .forecast-summary {
-      background: rgba(30, 58, 138, 0.3);
-      padding: 6px 8px;
-      border-radius: 5px;
-      margin-top: 6px;
-      font-size: 0.7rem;
-      line-height: 1.3;
+      background: linear-gradient(135deg, #3c6382 0%, #0c2461 100%);
+      color: white;
+      padding: clamp(14px, 2.5vh, 18px);
+      border-radius: 12px;
+      margin-top: clamp(12px, 2vh, 16px);
+      font-size: clamp(12px, 1.7vw, 14px);
+      line-height: 1.6;
     }
 
     .forecast-summary strong {
       display: block;
-      margin-bottom: 3px;
-      font-size: 0.75rem;
+      margin-bottom: clamp(6px, 1vh, 8px);
+      font-size: clamp(13px, 1.9vw, 15px);
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: clamp(20px, 3vh, 32px);
+      color: #2f3542;
+      font-size: clamp(13px, 1.8vw, 14px);
+      background: rgba(223, 228, 234, 0.5);
+      margin-top: clamp(24px, 4vh, 40px);
     }
 
     /* Responsive */
@@ -256,203 +371,350 @@
       .results-grid {
         grid-template-columns: 1fr;
       }
-      
+
       .weather-grid {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, 1fr);
       }
+    }
+
+    @media (max-width: 480px) {
+      .header-content {
+        justify-content: center;
+      }
+
+      .nav-links {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+      }
+
+      .weather-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Animation */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .upload-container,
+    .image-preview-box,
+    .weather-analysis-box {
+      animation: fadeInUp 0.6s ease-out forwards;
     }
   </style>
 </head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <a href="{% url 'today' %}" class="logo">Weather Dashboard</a>
 
-<body class="image-page">
-  <header>
-    <nav class="navbar navbar-expand-lg bg-body-tertiary"
-      style="border-radius: 0 0 1rem 1rem; background-color: rgba(0, 0, 0, 0.1) !important;">
-      <div class="container-fluid">
-        <h1>
-          <a href="#" style="text-decoration: none; color: white; font-weight: 600;">Ahmedabad Weather</a>
-        </h1>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
-          aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNavAltMarkup" style="justify-content: flex-end;">
-          <div class="navbar-nav">
-            <a class="nav-link" href="{% url 'today' %}">Today</a>
-            <a class="nav-link" href="{% url 'hourly' %}">Hourly</a>
-            <a class="nav-link" href="{% url '10day' %}">10 Day</a>
-            <a class="nav-link" href="{% url 'monthly' %}">Monthly</a>
-            <a class="nav-link" href="{% url 'image' %}">From Image</a>
-          </div>
-          <button id="toggleMode">🌙</button>
-        </div>
+      <div class="nav-links">
+        <a href="{% url 'today' %}">Today</a>
+        <a href="{% url 'hourly' %}">Hourly</a>
+        <a href="{% url '10day' %}">10 Day</a>
+        <a href="{% url 'monthly' %}">Monthly</a>
+        <a href="{% url 'image' %}">Image</a>
       </div>
-    </nav>
-  </header>
 
-  <div class="main-content">
-    <div class="container">
-      <h2>Weather Prediction from Image</h2>
-
-      <div class="content-wrapper">
-        <!-- Error Message Display -->
-        {% if error_message %}
-          <div class="alert-custom alert-danger">
-            <strong>⚠️</strong> {{ error_message }}
-          </div>
-        {% endif %}
-
-        <!-- Upload Form -->
-        <div class="upload-section">
-          <form method="POST" enctype="multipart/form-data" style="display: inline-block;">
-            {% csrf_token %}
-            <label for="id_image" class="custom-file-upload">📁 Choose Image</label>
-            <input type="file" id="id_image" name="image" accept="image/*" required onchange="handleFileSelect()">
-            <button type="submit" class="upload-btn" id="uploadBtn" style="display: none;">🔍 Analyze</button>
-          </form>
-          <div class="file-info">
-            JPG, PNG, GIF, BMP, WEBP, TIFF | Max: 10 MB
-          </div>
-        </div>
-
-        <!-- Results Grid -->
-        {% if image_base64 or weather_info %}
-        <div class="results-grid">
-          
-          <!-- Image Preview Section -->
-          {% if image_base64 %}
-          <div class="image-section">
-            <h3>📸 Uploaded Image</h3>
-            <img id="fullPreview" src="{{ image_base64 }}" alt="Uploaded Image">
-          </div>
-          {% endif %}
-
-          <!-- Weather Forecast Section -->
-          {% if weather_info and weather_info.is_sky %}
-          <div class="weather-forecast-box">
-            <div class="forecast-header">
-              🌤️ Weather Analysis
-            </div>
-
-            <div class="weather-grid">
-              {% if weather_info.weather_condition %}
-              <div class="weather-item">
-                <span class="weather-label">☁️ Condition</span>
-                <span class="weather-value">{{ weather_info.weather_condition }}</span>
-              </div>
-              {% endif %}
-
-              {% if weather_info.cloud_coverage %}
-              <div class="weather-item">
-                <span class="weather-label">☁️ Coverage</span>
-                <span class="weather-value">{{ weather_info.cloud_coverage }}</span>
-              </div>
-              {% endif %}
-
-              {% if weather_info.cloud_type %}
-              <div class="weather-item">
-                <span class="weather-label">🌥️ Type</span>
-                <span class="weather-value">{{ weather_info.cloud_type }}</span>
-              </div>
-              {% endif %}
-
-              {% if weather_info.cloud_darkness %}
-              <div class="weather-item">
-                <span class="weather-label">🌑 Darkness</span>
-                <span class="weather-value">{{ weather_info.cloud_darkness }}</span>
-              </div>
-              {% endif %}
-
-              {% if weather_info.cloud_intensity %}
-              <div class="weather-item">
-                <span class="weather-label">💨 Intensity</span>
-                <span class="weather-value">{{ weather_info.cloud_intensity }}</span>
-              </div>
-              {% endif %}
-
-              {% if weather_info.rain_probability %}
-              <div class="weather-item">
-                <span class="weather-label">🌧️ Rain</span>
-                <span class="weather-value">{{ weather_info.rain_probability }}</span>
-              </div>
-              {% endif %}
-
-              {% if weather_info.approximate_temp %}
-              <div class="weather-item">
-                <span class="weather-label">🌡️ Temp</span>
-                <span class="weather-value">{{ weather_info.approximate_temp }}</span>
-              </div>
-              {% endif %}
-
-              {% if weather_info.visibility %}
-              <div class="weather-item">
-                <span class="weather-label">👁️ Visibility</span>
-                <span class="weather-value">{{ weather_info.visibility }}</span>
-              </div>
-              {% endif %}
-
-              {% if weather_info.atmospheric_conditions %}
-              <div class="weather-item">
-                <span class="weather-label">🌫️ Atmosphere</span>
-                <span class="weather-value">{{ weather_info.atmospheric_conditions }}</span>
-              </div>
-              {% endif %}
-
-              {% if weather_info.wind_indication %}
-              <div class="weather-item">
-                <span class="weather-label">💨 Wind</span>
-                <span class="weather-value">{{ weather_info.wind_indication }}</span>
-              </div>
-              {% endif %}
-
-              {% if weather_info.time_of_day %}
-              <div class="weather-item">
-                <span class="weather-label">🕐 Time</span>
-                <span class="weather-value">{{ weather_info.time_of_day }}</span>
-              </div>
-              {% endif %}
-            </div>
-
-            {% if weather_info.weather_forecast %}
-            <div class="forecast-summary">
-              <strong>📋 Forecast:</strong>
-              {{ weather_info.weather_forecast }}
-            </div>
-            {% endif %}
-
-            {% if weather_info.details %}
-            <div class="forecast-summary">
-              <strong>🔍 Analysis:</strong>
-              {{ weather_info.details }}
-            </div>
-            {% endif %}
-          </div>
-          {% endif %}
-
-        </div>
-        {% endif %}
-
-      </div>
+      <button id="colorblindMode" class="colorblind-btn" title="Toggle Colorblind Mode">👁️</button>
+      <button id="toggleMode" class="toggle-btn" onclick="toggleTheme()">🌙</button>
     </div>
   </div>
 
-  <footer>
-    &copy; 2025 Ahmedabad Weather | Powered by AI
-  </footer>
+  <!-- Main Container -->
+  <div class="container">
+    <h1 class="page-title">📸 Weather Prediction from Image</h1>
+
+    <!-- Error Message -->
+    {% if error_message %}
+    <div class="alert-danger">
+      <strong>⚠️</strong> {{ error_message }}
+    </div>
+    {% endif %}
+
+    <!-- Upload Section -->
+    <div class="upload-container">
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="id_image" class="upload-label">📁 Choose Image</label>
+        <input type="file" id="id_image" name="image" accept="image/*" required onchange="handleFileSelect()">
+        <button type="submit" class="upload-btn" id="uploadBtn">🔍 Analyze Weather</button>
+      </form>
+      <div class="file-info">
+        Supported: JPG, PNG, GIF, BMP, WEBP, TIFF | Max: 10 MB
+      </div>
+    </div>
+
+    <!-- Results Grid -->
+    {% if image_base64 or weather_info %}
+    <div class="results-grid">
+      
+      <!-- Image Preview -->
+      {% if image_base64 %}
+      <div class="image-preview-box">
+        <h3 class="section-title">📸 Uploaded Image</h3>
+        <img id="fullPreview" src="{{ image_base64 }}" alt="Uploaded Image">
+      </div>
+      {% endif %}
+
+      <!-- Weather Analysis -->
+      {% if weather_info and weather_info.is_sky %}
+      <div class="weather-analysis-box">
+        <h3 class="section-title">🌤️ Weather Analysis</h3>
+
+        <div class="weather-grid">
+          {% if weather_info.weather_condition %}
+          <div class="weather-item">
+            <span class="weather-label">☁️ Condition</span>
+            <span class="weather-value">{{ weather_info.weather_condition }}</span>
+          </div>
+          {% endif %}
+
+          {% if weather_info.cloud_coverage %}
+          <div class="weather-item">
+            <span class="weather-label">☁️ Coverage</span>
+            <span class="weather-value">{{ weather_info.cloud_coverage }}</span>
+          </div>
+          {% endif %}
+
+          {% if weather_info.cloud_type %}
+          <div class="weather-item">
+            <span class="weather-label">🌥️ Type</span>
+            <span class="weather-value">{{ weather_info.cloud_type }}</span>
+          </div>
+          {% endif %}
+
+          {% if weather_info.cloud_darkness %}
+          <div class="weather-item">
+            <span class="weather-label">🌑 Darkness</span>
+            <span class="weather-value">{{ weather_info.cloud_darkness }}</span>
+          </div>
+          {% endif %}
+
+          {% if weather_info.cloud_intensity %}
+          <div class="weather-item">
+            <span class="weather-label">💨 Intensity</span>
+            <span class="weather-value">{{ weather_info.cloud_intensity }}</span>
+          </div>
+          {% endif %}
+
+          {% if weather_info.rain_probability %}
+          <div class="weather-item">
+            <span class="weather-label">🌧️ Rain</span>
+            <span class="weather-value">{{ weather_info.rain_probability }}</span>
+          </div>
+          {% endif %}
+
+          {% if weather_info.approximate_temp %}
+          <div class="weather-item">
+            <span class="weather-label">🌡️ Temperature</span>
+            <span class="weather-value">{{ weather_info.approximate_temp }}</span>
+          </div>
+          {% endif %}
+
+          {% if weather_info.visibility %}
+          <div class="weather-item">
+            <span class="weather-label">👁️ Visibility</span>
+            <span class="weather-value">{{ weather_info.visibility }}</span>
+          </div>
+          {% endif %}
+
+          {% if weather_info.atmospheric_conditions %}
+          <div class="weather-item">
+            <span class="weather-label">🌫️ Atmosphere</span>
+            <span class="weather-value">{{ weather_info.atmospheric_conditions }}</span>
+          </div>
+          {% endif %}
+
+          {% if weather_info.wind_indication %}
+          <div class="weather-item">
+            <span class="weather-label">💨 Wind</span>
+            <span class="weather-value">{{ weather_info.wind_indication }}</span>
+          </div>
+          {% endif %}
+
+          {% if weather_info.time_of_day %}
+          <div class="weather-item">
+            <span class="weather-label">🕐 Time</span>
+            <span class="weather-value">{{ weather_info.time_of_day }}</span>
+          </div>
+          {% endif %}
+        </div>
+
+        {% if weather_info.weather_forecast %}
+        <div class="forecast-summary">
+          <strong>📋 Forecast Summary</strong>
+          {{ weather_info.weather_forecast }}
+        </div>
+        {% endif %}
+
+        {% if weather_info.details %}
+        <div class="forecast-summary">
+          <strong>🔍 Detailed Analysis</strong>
+          {{ weather_info.details }}
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>&copy; 2025 Weather Dashboard | Powered by AI 🤖</p>
+  </div>
+
 
 <script>
-function handleFileSelect() {
-  const fileInput = document.getElementById('id_image');
-  const uploadBtn = document.getElementById('uploadBtn');
+    document.addEventListener("DOMContentLoaded", function () {
 
-  if (fileInput.files.length > 0) {
-    uploadBtn.style.display = 'inline-block';
-  } else {
-    uploadBtn.style.display = 'none';
-  }
-}
-</script>
+      // -----------------------------
+      // 1) RESTORE DARK MODE
+      // -----------------------------
+      let savedDark = localStorage.getItem("darkMode");
 
+      if (savedDark === "true") {
+        // Simulate the button click so that ALL your styles apply
+        document.getElementById("toggleMode").click();
+      }
+
+      // -----------------------------
+      // 2) RESTORE COLORBLIND MODE
+      // -----------------------------
+      let savedCB = localStorage.getItem("colorblindMode");
+
+      if (savedCB === "true") {
+        document.getElementById("colorblindMode").click();
+      }
+    });
+  </script>
+
+  <script>
+    const toggleBtn = document.getElementById("toggleMode");
+    const colorblindBtn = document.getElementById("colorblindMode");
+    const body = document.body;
+    let darkMode = false;
+    let colorblindMode = false;
+
+    function handleFileSelect() {
+      const fileInput = document.getElementById('id_image');
+      const uploadBtn = document.getElementById('uploadBtn');
+      
+      if (fileInput.files.length > 0) {
+        uploadBtn.style.display = 'inline-block';
+      } else {
+        uploadBtn.style.display = 'none';
+      }
+    }
+
+    // Colorblind mode toggle
+    colorblindBtn.addEventListener("click", function() {
+      colorblindMode = !colorblindMode;
+      localStorage.setItem("colorblindMode", colorblindMode);
+
+
+      if (colorblindMode) {
+        body.classList.add('colorblind-mode');
+        colorblindBtn.style.background = '#ff6b6b';
+        colorblindBtn.textContent = "👁️‍🗨️";
+      } else {
+        body.classList.remove('colorblind-mode');
+        colorblindBtn.style.background = '#dfe4ea';
+        colorblindBtn.textContent = "👁️";
+      }
+    });
+
+    // Dark/Light mode toggle
+    toggleBtn.addEventListener("click", function() {
+      darkMode = !darkMode;
+      localStorage.setItem("darkMode", darkMode);
+
+      if (darkMode) {
+        // Dark Mode
+        body.style.background = "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)";
+        toggleBtn.textContent = "☀️";
+        toggleBtn.style.background = "#ffd700";
+        
+        document.querySelector('.header').style.background = '#1f2937';
+        document.querySelectorAll('.nav-links a').forEach(el => {
+          el.style.color = '#e2e8f0';
+        });
+        document.querySelector('.logo').style.color = '#f3f4f6';
+        document.querySelector('.page-title').style.color = '#f3f4f6';
+        
+        document.querySelectorAll('.upload-container, .image-preview-box, .weather-analysis-box').forEach(el => {
+          el.style.background = '#1f2937';
+        });
+        
+        document.querySelectorAll('.section-title').forEach(el => {
+          el.style.color = '#f3f4f6';
+        });
+        
+        document.querySelectorAll('.weather-item').forEach(el => {
+          el.style.background = 'linear-gradient(135deg, #374151 0%, #1f2937 100%)';
+        });
+        
+        document.querySelectorAll('.weather-label').forEach(el => {
+          el.style.color = '#9ca3af';
+        });
+        
+        document.querySelectorAll('.weather-value').forEach(el => {
+          el.style.color = '#f3f4f6';
+        });
+        
+        document.querySelector('.footer').style.background = 'rgba(31, 41, 55, 0.5)';
+        document.querySelector('.footer').style.color = '#e2e8f0';
+        
+      } else {
+        // Light Mode
+        body.style.background = "linear-gradient(135deg, #c8d6e5 0%, #8395a7 100%)";
+        toggleBtn.textContent = "🌙";
+        toggleBtn.style.background = "#dfe4ea";
+        
+        document.querySelector('.header').style.background = '#f5f6fa';
+        document.querySelectorAll('.nav-links a').forEach(el => {
+          el.style.color = '#2f3542';
+        });
+        document.querySelector('.logo').style.color = '#2f3542';
+        document.querySelector('.page-title').style.color = '#2f3542';
+        
+        document.querySelectorAll('.upload-container, .image-preview-box, .weather-analysis-box').forEach(el => {
+          el.style.background = '#f5f6fa';
+        });
+        
+        document.querySelectorAll('.section-title').forEach(el => {
+          el.style.color = '#2f3542';
+        });
+        
+        document.querySelectorAll('.weather-item').forEach(el => {
+          el.style.background = 'linear-gradient(135deg, #dfe4ea 0%, #ced6e0 100%)';
+        });
+        
+        document.querySelectorAll('.weather-label').forEach(el => {
+          el.style.color = '#747d8c';
+        });
+        
+        document.querySelectorAll('.weather-value').forEach(el => {
+          el.style.color = '#2f3542';
+        });
+        
+        document.querySelector('.footer').style.background = 'rgba(223, 228, 234, 0.5)';
+        document.querySelector('.footer').style.color = '#2f3542';
+      }
+    });
+
+  </script>
 </body>
-
 </html>
